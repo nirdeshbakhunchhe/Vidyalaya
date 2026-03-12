@@ -21,8 +21,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       if (token) {
         try {
-          authAPI.setToken(token);
-          const userData = await authAPI.getCurrentUser();
+          const userData = await authAPI.getMe();
           setUser(userData);
         } catch (error) {
           console.error('Auth check failed:', error);
@@ -43,7 +42,6 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      authAPI.setToken(newToken);
       setUser(userData);
       
       return { success: true };
@@ -57,12 +55,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, role = 'student') => {
     try {
-      const response = await authAPI.register(name, email, password, role);
+      const response = await authAPI.signup({ name, email, password, role });
       const { token: newToken, user: userData } = response;
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      authAPI.setToken(newToken);
       setUser(userData);
       
       return { success: true };
@@ -74,11 +71,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // signup accepts a full payload object — used by the new Signup.jsx
+  const signup = async (payload) => {
+    const response = await authAPI.signup(payload);
+    const { token: newToken, user: userData } = response;
+
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    setUser(userData);
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    authAPI.setToken(null);
+  };
+
+  const updateUser = (userData) => {
+    setUser(userData);
   };
 
   const value = {
@@ -87,9 +97,10 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     login,
     register,
+    signup,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
