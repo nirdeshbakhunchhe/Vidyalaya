@@ -1,8 +1,7 @@
-import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -12,7 +11,9 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  return !isAuthenticated ? children : <Navigate to="/home" replace />;
+  // Always allow access to public pages (login/signup),
+  // even if a token already exists in localStorage.
+  return children;
 };
 
 export default PublicRoute;
