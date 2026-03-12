@@ -1,9 +1,34 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import {
+  FaBookOpen, FaLightbulb, FaChartBar, FaBolt,
+  FaBell, FaBars, FaTimes,
+  FaHome, FaTh, FaBook, FaCompass, FaRobot, FaSignOutAlt,
+} from 'react-icons/fa';
+
+const MOCK_NOTIFICATIONS = [
+  { id: 1, message: 'New lesson added to Web Development Bootcamp', time: '2 hrs ago', read: false },
+  { id: 2, message: 'You completed "Variables & Data Types"', time: '1 day ago', read: false },
+  { id: 3, message: 'Quiz deadline tomorrow: Python Basics', time: '1 day ago', read: true },
+];
 
 const Home = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  const unread = notifications.filter((n) => !n.read).length;
+
+  const navLinks = [
+    { label: 'Home',       path: '/home',            icon: FaHome    },
+    { label: 'Dashboard',  path: '/dashboard',       icon: FaTh      },
+    { label: 'My Courses', path: '/my-courses',      icon: FaBook    },
+    { label: 'Explore',    path: '/explore-courses', icon: FaCompass },
+    { label: 'AI Tutor',   path: '/ai-tutor',        icon: FaRobot   },
+  ];
 
   const handleLogout = () => {
     logout();
@@ -12,34 +37,148 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      {/* Navigation Bar */}
-      <nav className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+
+      {/* ── Navigation Bar ── */}
+      <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gradient">Vidyalaya</h1>
+          <div className="flex items-center justify-between h-16 gap-4">
+
+            {/* Logo */}
+            <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate('/home')}>
+              <span className="text-2xl font-extrabold text-blue-500 tracking-tight">Vidyalaya</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:flex items-center space-x-4">
-                <span className="text-slate-700 dark:text-slate-300">
-                  Welcome, <span className="font-semibold">{user?.name}</span>
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                  {user?.role}
-                </span>
+
+            {/* Nav Links (desktop) */}
+            <div className="hidden md:flex items-center justify-center flex-1">
+              <div className="flex items-center space-x-1">
+                {navLinks.map((link) => {
+                  const Icon = link.icon;
+                  const isActive = link.path === '/home';
+                  return (
+                    <button
+                      key={link.path}
+                      onClick={() => navigate(link.path)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                        isActive
+                          ? 'bg-blue-500 text-white shadow-md'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Icon className="text-sm" />
+                      <span>{link.label}</span>
+                    </button>
+                  );
+                })}
               </div>
+            </div>
+
+            {/* Right: Bell + Avatar + Logout */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <FaBell className="text-lg" />
+                  {unread > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold leading-none">
+                      {unread}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                      <h4 className="font-semibold text-slate-900 dark:text-white text-sm">Notifications</h4>
+                      <button
+                        onClick={() => setNotifications((p) => p.map((n) => ({ ...n, read: true })))}
+                        className="text-xs text-blue-500 hover:underline"
+                      >
+                        Mark all read
+                      </button>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
+                      {notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`px-4 py-3 flex items-start space-x-3 ${!n.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}
+                        >
+                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.read ? 'bg-blue-500' : 'bg-slate-300'}`} />
+                          <div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300">{n.message}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{n.time}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Avatar */}
+              <button
+                onClick={() => navigate('/profile')}
+                className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all"
+              >
+                {user?.name?.charAt(0)?.toUpperCase() || 'S'}
+              </button>
+
+              {/* Logout (desktop) */}
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                className="hidden sm:flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                Logout
+                <FaSignOutAlt className="text-sm" />
+                <span>Logout</span>
+              </button>
+
+              {/* Mobile toggle */}
+              <button
+                onClick={() => setMobileMenu(!mobileMenu)}
+                className="md:hidden p-2 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {mobileMenu ? <FaTimes /> : <FaBars />}
               </button>
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenu && (
+            <div className="md:hidden pb-4 pt-2 space-y-1 border-t border-slate-100 dark:border-slate-700">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = link.path === '/home';
+                return (
+                  <button
+                    key={link.path}
+                    onClick={() => { navigate(link.path); setMobileMenu(false); }}
+                    className={`w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-500 text-white'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <Icon className="text-sm" />
+                    <span>{link.label}</span>
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => { handleLogout(); setMobileMenu(false); }}
+                className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <FaSignOutAlt className="text-sm" />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* ── Hero Section ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold text-slate-900 dark:text-white mb-4">
@@ -54,9 +193,7 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg mb-4">
-              <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <FaBookOpen className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Personalized Learning</h3>
             <p className="text-slate-600 dark:text-slate-400">
@@ -66,9 +203,7 @@ const Home = () => {
 
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg mb-4">
-              <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
+              <FaLightbulb className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Interactive Tutoring</h3>
             <p className="text-slate-600 dark:text-slate-400">
@@ -78,9 +213,7 @@ const Home = () => {
 
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg mb-4">
-              <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+              <FaChartBar className="w-6 h-6 text-primary-600 dark:text-primary-400" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Progress Tracking</h3>
             <p className="text-slate-600 dark:text-slate-400">
@@ -89,13 +222,11 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Main Content Area */}
+        {/* Main CTA */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-700">
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-6">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <FaBolt className="w-10 h-10 text-white" />
             </div>
             <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
               Ready to Start Learning?
@@ -104,11 +235,17 @@ const Home = () => {
               Your personalized learning experience is ready. Start exploring courses, interact with the AI tutor, and track your progress.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all shadow-lg hover:shadow-xl">
-                Explore Courses
+              <button
+                onClick={() => navigate('/my-courses')}
+                className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all shadow-lg hover:shadow-xl"
+              >
+                My Courses →
               </button>
-              <button className="px-6 py-3 bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 font-semibold rounded-lg border-2 border-primary-600 dark:border-primary-400 hover:bg-primary-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all">
-                Chat with AI Tutor
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-6 py-3 bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 font-semibold rounded-lg border-2 border-primary-600 dark:border-primary-400 hover:bg-primary-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all"
+              >
+                Assignments
               </button>
             </div>
           </div>
@@ -144,4 +281,3 @@ const Home = () => {
 };
 
 export default Home;
-
