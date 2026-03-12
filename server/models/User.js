@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please provide a password'],
       minlength: [6, 'Password must be at least 6 characters'],
-      select: false, 
+      select: false,
     },
     role: {
       type: String,
@@ -39,6 +39,25 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // ── Teacher-specific fields ──────────────────────────────────────────────
+    degree: {
+      type: String,
+      trim: true,
+      default: '',
+      // e.g. "M.Sc. Computer Science", "PhD Mathematics"
+    },
+    yearsOfTeaching: {
+      type: Number,
+      min: [0, 'Years of teaching cannot be negative'],
+      default: null,
+    },
+    experienceDescription: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Experience description cannot exceed 500 characters'],
+      default: '',
+    },
   },
   {
     timestamps: true,
@@ -50,7 +69,6 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
-
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -64,4 +82,3 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 const User = mongoose.model('User', userSchema);
 
 export default User;
-
