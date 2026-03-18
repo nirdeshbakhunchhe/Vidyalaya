@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { courseAPI } from '../services/api';
+import { courseAPI, enrollmentAPI } from '../services/api';
 import DashboardNav from './DashboardNav';
 import TeacherSidebar from '../components/TeacherSidebar';
 import {
@@ -187,6 +187,8 @@ const TeacherDashboard = () => {
 
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [enrollments, setEnrollments] = useState([]);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(true);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -203,6 +205,7 @@ const TeacherDashboard = () => {
 
   useEffect(() => {
     fetchCourses();
+    fetchEnrollments();
   }, []);
 
   const fetchCourses = async () => {
@@ -214,6 +217,18 @@ const TeacherDashboard = () => {
       setCourses([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEnrollments = async () => {
+    setEnrollmentLoading(true);
+    try {
+      const data = await enrollmentAPI.getTeachingRequests();
+      setEnrollments(data.enrollments || []);
+    } catch {
+      setEnrollments([]);
+    } finally {
+      setEnrollmentLoading(false);
     }
   };
 
@@ -276,6 +291,21 @@ const TeacherDashboard = () => {
       showToast(`Course ${!course.isPublished ? 'published' : 'unpublished'}.`);
     } catch {
       showToast('Failed to update status.');
+    }
+  };
+
+  const handleEnrollmentAction = async (id, action) => {
+    try {
+      if (action === 'approve') {
+        await enrollmentAPI.approve(id);
+        showToast('Enrollment approved');
+      } else {
+        await enrollmentAPI.reject(id);
+        showToast('Enrollment rejected');
+      }
+      await Promise.all([fetchEnrollments(), fetchCourses()]);
+    } catch {
+      showToast('Failed to update enrollment request');
     }
   };
 
@@ -352,6 +382,76 @@ const TeacherDashboard = () => {
               <StatCard icon={FaStar} label="Avg Rating" value={avgRating} gradient="from-yellow-500 to-amber-500" sub="Student reviews" />
               <StatCard icon={FaChartLine} label="Published" value={published} gradient="from-green-500 to-emerald-500" sub={`of ${courses.length} courses`} />
             </div>
+            )}
+
+            {/* ── Enrollment Requests (dashboard only) ── */}
+            {!isMyCourses && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <FaUsers className="text-amber-500" />Enrollment Requests
+                  </h3>
+                </div>
+                {enrollmentLoading ? (
+                  <div className="flex justify-center py-10">
+                    <FaSpinner className="text-2xl text-amber-500 animate-spin" />
+                  </div>
+                ) : enrollments.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    No enrollment requests yet.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {enrollments.map((req) => (
+                      <div
+                        key={req.id}
+                        className="flex flex-wrap items-center gap-3 justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            {req.studentName}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {req.courseTitle}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-slate-400">
+                            {new Date(req.createdAt).toLocaleDateString()}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                              req.status === 'pending'
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                                : req.status === 'approved'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            }`}
+                          >
+                            {req.status}
+                          </span>
+                        </div>
+                        {req.status === 'pending' && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleEnrollmentAction(req.id, 'approve')}
+                              className="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-semibold hover:bg-green-600 transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleEnrollmentAction(req.id, 'reject')}
+                              className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ── My Courses ── */}

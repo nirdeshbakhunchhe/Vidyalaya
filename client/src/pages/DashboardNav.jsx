@@ -18,6 +18,15 @@ const DashboardNav = ({ activePage }) => {
 
   // Different navigation links for teachers and students
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
+
+  // Compute avatar URL (handles both absolute and legacy relative paths)
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const API_ROOT = API_BASE.replace(/\/api\/?$/, '');
+  const rawAvatar = user?.avatar || '';
+  const avatarSrc =
+    rawAvatar && !rawAvatar.startsWith('http')
+      ? `${API_ROOT}${rawAvatar}`
+      : rawAvatar;
   
   const navLinks = isTeacher ? [
     { label: 'Dashboard',  path: '/teacher/dashboard',   icon: FaTh      },
@@ -78,8 +87,8 @@ const DashboardNav = ({ activePage }) => {
               onClick={() => navigate('/profile')}
               className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm hover:ring-2 hover:ring-blue-400 hover:ring-offset-1 transition-all overflow-hidden flex-shrink-0"
             >
-              {user?.avatar ? (
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              {avatarSrc ? (
+                <img src={avatarSrc} alt={user?.name} className="w-full h-full object-cover" />
               ) : (
                 user?.name?.charAt(0)?.toUpperCase() || 'U'
               )}

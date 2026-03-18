@@ -127,9 +127,10 @@ router.get(
 );
 
 // ─── GET /api/courses/:id ─────────────────────────────────────────────────────
-// Public.
+// Protected. Return course details with user-aware flags (e.g. isEnrolled).
 router.get(
   '/:id',
+  protect,
   asyncHandler(async (req, res) => {
     const course = await Course.findById(req.params.id);
 
@@ -139,7 +140,7 @@ router.get(
 
     res.json({
       success: true,
-      course: formatCourse(course, req.user?._id),
+      course: formatCourse(course, req.user._id),
     });
   })
 );

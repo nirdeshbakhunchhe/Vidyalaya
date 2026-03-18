@@ -8,6 +8,7 @@ import About from './pages/About';
 import Features from './pages/Features';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import OtpVerification from './pages/OtpVerification';
 import Home from './pages/Home';
 import ExploreCourses from './pages/ExploreCourses';
 import CourseDetail from './pages/CourseDetail';
@@ -18,6 +19,10 @@ import MyCourses from './pages/MyCourses';
 import ProfilePage from './pages/ProfilePage';
 import CourseLearning from './pages/CourseLearning';
 import Assignments from './pages/Assignments';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminProfile from './pages/AdminProfile';
+import AdminUsers from './pages/AdminUsers';
+import AdminTeachers from './pages/AdminTeachers';
 
 // ── TeacherRoute ──────────────────────────────────────────────────────────────
 // Wraps ProtectedRoute and additionally enforces role === 'teacher'.
@@ -44,6 +49,30 @@ const TeacherRoute = ({ children }) => {
   return children;
 };
 
+// ── AdminRoute ─────────────────────────────────────────────────────────────────
+// Restricts access to admin-only routes.
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
 // ── Role-aware dashboard redirect ────────────────────────────────────────────
 // /dashboard redirects teachers to their own dashboard automatically.
 const DashboardRouter = () => {
@@ -57,8 +86,12 @@ const DashboardRouter = () => {
     );
   }
 
-  if (user?.role === 'teacher' || user?.role === 'admin') {
+  if (user?.role === 'teacher') {
     return <Navigate to="/teacher/dashboard" replace />;
+  }
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
   }
 
   return <StudentDashboard />;
@@ -86,6 +119,14 @@ function App() {
             element={
               <PublicRoute>
                 <Signup />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/verify-otp"
+            element={
+              <PublicRoute>
+                <OtpVerification />
               </PublicRoute>
             }
           />
@@ -161,6 +202,40 @@ function App() {
               <TeacherRoute>
                 <TeacherDashboard />
               </TeacherRoute>
+            }
+          />
+
+          {/* ── Admin Routes ── */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/profile"
+            element={
+              <AdminRoute>
+                <AdminProfile />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsers />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/teachers"
+            element={
+              <AdminRoute>
+                <AdminTeachers />
+              </AdminRoute>
             }
           />
 

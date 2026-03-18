@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import api, { enrollmentAPI } from '../services/api';
 import {
   FaArrowLeft,
   FaStar,
@@ -95,6 +95,7 @@ const CourseDetail = () => {
   const [error, setError] = useState('');
   const [enrolling, setEnrolling] = useState(false);
   const [enrollSuccess, setEnrollSuccess] = useState('');
+  const [enrollmentStatus, setEnrollmentStatus] = useState(null); // pending | approved | rejected | null
   const [userRating, setUserRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [openSection, setOpenSection] = useState(0);
@@ -114,8 +115,20 @@ const CourseDetail = () => {
       setLoading(true);
       setError('');
       try {
-        const data = await api.get(`/courses/${id}`);
+        const { data } = await api.get(`/courses/${id}`);
         setCourse(data.course);
+
+        // If user is logged in and not yet enrolled, check request status
+        if (user && !data.course.isEnrolled) {
+          try {
+            const status = await enrollmentAPI.getStatus(id);
+            setEnrollmentStatus(status?.status || null);
+          } catch {
+            setEnrollmentStatus(null);
+          }
+        } else if (data.course.isEnrolled) {
+          setEnrollmentStatus('approved');
+        }
       } catch (err) {
         const errorMessage =
           err.response?.data?.message || err.message || 'Failed to load course';
@@ -133,23 +146,26 @@ const CourseDetail = () => {
       navigate('/login');
       return;
     }
+    if (!course) {
+      setError('Course is not loaded yet.');
+      return;
+    }
+    // If already fully enrolled
+    if (course?.isEnrolled) {
+      setError('You are already enrolled in this course.');
+      return;
+    }
+
     setEnrolling(true);
     setEnrollSuccess('');
     setError('');
     try {
-      let data;
-      if (course.isEnrolled) {
-        data = await api.delete(`/courses/${id}/enroll`);
-      } else {
-        data = await api.post(`/courses/${id}/enroll`);
-      }
-      setCourse(data.course);
-      setEnrollSuccess(
-        course.isEnrolled ? 'Unenrolled successfully.' : 'Enrolled! Start learning now.'
-      );
+      const enrollment = await enrollmentAPI.requestEnrollment(id);
+      setEnrollmentStatus(enrollment.status);
+      setEnrollSuccess('Enrollment request sent. Waiting for approval.');
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || err.message || 'Action failed';
+        err.response?.data?.message || err.message || 'Failed to request enrollment';
       setError(errorMessage);
     } finally {
       setEnrolling(false);
@@ -439,12 +455,28 @@ const CourseDetail = () => {
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 sticky top-24 space-y-5">
 
-              {/* Enrolled badge */}
+              {/* Enrolled / Request badge */}
               {course?.isEnrolled && (
                 <div className="flex items-center space-x-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                   <FaCheckCircle className="text-green-500" />
                   <span className="text-green-700 dark:text-green-400 text-sm font-semibold">
                     You're enrolled
+                  </span>
+                </div>
+              )}
+              {!course?.isEnrolled && enrollmentStatus === 'pending' && (
+                <div className="flex items-center space-x-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <FaClock className="text-amber-500" />
+                  <span className="text-amber-700 dark:text-amber-400 text-sm font-semibold">
+                    Enrollment request pending approval
+                  </span>
+                </div>
+              )}
+              {!course?.isEnrolled && enrollmentStatus === 'rejected' && (
+                <div className="flex items-center space-x-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <FaExclamationCircle className="text-red-500" />
+                  <span className="text-red-700 dark:text-red-400 text-sm font-semibold">
+                    Your previous enrollment request was rejected
                   </span>
                 </div>
               )}
@@ -503,22 +535,24 @@ const CourseDetail = () => {
 
               <hr className="border-slate-200 dark:border-slate-700" />
 
-              {/* Enroll / Unenroll button */}
+              {/* Enroll button (now requests approval) */}
               <button
                 onClick={handleEnroll}
-                disabled={enrolling}
+                disabled={enrolling || enrollmentStatus === 'pending' || course?.isEnrolled}
                 className={`w-full py-3 px-4 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 ${
                   course?.isEnrolled
-                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 border border-slate-300 dark:border-slate-600'
+                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600'
                     : 'bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600'
                 }`}
               >
                 {enrolling ? (
                   <FaSpinner className="animate-spin" />
                 ) : course?.isEnrolled ? (
-                  <span>Unenroll from Course</span>
+                  <span>Already Enrolled</span>
+                ) : enrollmentStatus === 'pending' ? (
+                  <span>Request Pending</span>
                 ) : (
-                  <span>Enroll Now — It's Free</span>
+                  <span>Request Enrollment</span>
                 )}
               </button>
 

@@ -95,15 +95,25 @@ const ProfilePage = () => {
   const handleAvatarSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setAvatarPreview(URL.createObjectURL(file));
+
+    // Show the new photo immediately everywhere (profile + top nav)
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    updateUser({ ...(user || {}), avatar: previewUrl });
+
     setAvatarLoading(true);
     setAvatarError('');
     try {
+      // Persist avatar on the server and update with the final URL
       const updatedUser = await authAPI.uploadAvatar(file);
       updateUser(updatedUser);
     } catch (err) {
+      // Revert to previous user state on failure
       setAvatarError(err.response?.data?.message || 'Failed to upload avatar');
       setAvatarPreview('');
+      if (user) {
+        updateUser(user);
+      }
     } finally {
       setAvatarLoading(false);
     }
@@ -139,8 +149,14 @@ const ProfilePage = () => {
     { id: 'account', label: 'Account', icon: FaShieldAlt },
   ];
 
-  // Compute avatar display
-  const avatarSrc = avatarPreview || user?.avatar || '';
+  // Compute avatar display (supports both absolute and legacy relative URLs)
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const API_ROOT = API_BASE.replace(/\/api\/?$/, '');
+  const rawAvatar = avatarPreview || user?.avatar || '';
+  const avatarSrc =
+    rawAvatar && !rawAvatar.startsWith('http')
+      ? `${API_ROOT}${rawAvatar}`
+      : rawAvatar;
   const avatarInitial = user?.name?.charAt(0)?.toUpperCase() || 'U';
 
   const inputClass =

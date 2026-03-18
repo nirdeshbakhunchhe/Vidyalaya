@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema(
       enum: ['student', 'teacher', 'admin'],
       default: 'student',
     },
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
+    },
     avatar: {
       type: String,
       default: '',
@@ -57,6 +62,21 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, 'Experience description cannot exceed 500 characters'],
       default: '',
+    },
+
+    // ── OTP fields for email verification / password reset ────────────────────
+    otpCode: {
+      type: String,
+      select: false,
+    },
+    otpExpiresAt: {
+      type: Date,
+      select: false,
+    },
+    otpPurpose: {
+      type: String,
+      enum: ['signup', 'resetPassword', 'changePassword'],
+      select: false,
     },
   },
   {

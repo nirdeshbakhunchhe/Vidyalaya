@@ -26,12 +26,36 @@ export const authAPI = {
   // signup accepts a full payload object (including teacher fields)
   signup: async (payload) => {
     const { data } = await api.post('/auth/register', payload);
-    return { token: data.token, user: data.user };
+    return data;
   },
 
   getMe: async () => {
     const { data } = await api.get('/auth/me');
     return data.user;
+  },
+
+  verifyOtp: async (email, otp) => {
+    const { data } = await api.post('/auth/verify-otp', { email, otp });
+    return { token: data.token, user: data.user };
+  },
+
+  resendSignupOtp: async (email) => {
+    const { data } = await api.post('/auth/resend-signup-otp', { email });
+    return data;
+  },
+
+  forgotPassword: async (email) => {
+    const { data } = await api.post('/auth/forgot-password', { email });
+    return data;
+  },
+
+  resetPasswordWithOtp: async (email, otp, newPassword) => {
+    const { data } = await api.post('/auth/reset-password', {
+      email,
+      otp,
+      newPassword,
+    });
+    return data;
   },
 
   // updateProfile accepts a full payload object now (name, email + teacher fields)
@@ -53,6 +77,39 @@ export const authAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data.user;
+  },
+};
+
+// ── Admin API (user/teacher management) ───────────────────────────────────────
+export const adminAPI = {
+  // List users; optional filters via params (e.g. { role: 'teacher' })
+  getUsers: async (params = {}) => {
+    const { data } = await api.get('/auth/admin/users', { params });
+    return data.users;
+  },
+
+  // Create a new user (student/teacher/admin)
+  createUser: async (payload) => {
+    const { data } = await api.post('/auth/admin/users', payload);
+    return data.user;
+  },
+
+  // Update an existing user
+  updateUser: async (id, payload) => {
+    const { data } = await api.put(`/auth/admin/users/${id}`, payload);
+    return data.user;
+  },
+
+  // Delete a user
+  deleteUser: async (id) => {
+    const { data } = await api.delete(`/auth/admin/users/${id}`);
+    return data;
+  },
+
+  // Dashboard stats: total users / teachers / admins
+  getStats: async () => {
+    const { data } = await api.get('/auth/admin/stats');
+    return data.stats;
   },
 };
 
@@ -102,7 +159,7 @@ export const courseAPI = {
 
   // Protected (student): enroll in a course
   enrollCourse: async (id) => {
-    const { data } = await api.post(`/courses/${id}/enroll`);
+    const { data } = await api.post('/enrollments', { courseId: id });
     return data;
   },
 
@@ -119,4 +176,38 @@ export const courseAPI = {
   },
 };
 
+// ── Enrollment API (requests) ───────────────────────────────────────────────────
+export const enrollmentAPI = {
+  // Student: check status for a specific course
+  getStatus: async (courseId) => {
+    const { data } = await api.get(`/enrollments/status/${courseId}`);
+    return data.enrollment;
+  },
+
+  // Student: create enrollment request
+  requestEnrollment: async (courseId) => {
+    const { data } = await api.post('/enrollments', { courseId });
+    return data.enrollment;
+  },
+
+  // Teacher/Admin: list requests for teaching courses (or all, if admin)
+  getTeachingRequests: async () => {
+    const { data } = await api.get('/enrollments/teaching');
+    return data;
+  },
+
+  // Teacher/Admin: approve
+  approve: async (id) => {
+    const { data } = await api.post(`/enrollments/${id}/approve`);
+    return data.enrollment;
+  },
+
+  // Teacher/Admin: reject
+  reject: async (id) => {
+    const { data } = await api.post(`/enrollments/${id}/reject`);
+    return data.enrollment;
+  },
+};
+
 export default api;
+

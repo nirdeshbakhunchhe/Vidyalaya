@@ -53,32 +53,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Legacy helper; kept for compatibility (no longer auto‑logs in)
   const register = async (name, email, password, role = 'student') => {
     try {
-      const response = await authAPI.signup({ name, email, password, role });
-      const { token: newToken, user: userData } = response;
-      
-      localStorage.setItem('token', newToken);
-      setToken(newToken);
-      setUser(userData);
-      
-      return { success: true };
+      const data = await authAPI.signup({ name, email, password, role });
+      return { success: data.success, message: data.message, email: data.email };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.message || error.message || 'Registration failed',
+        error:
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message ||
+          'Registration failed',
       };
     }
   };
 
-  // signup accepts a full payload object — used by the new Signup.jsx
+  // signup now only triggers backend registration + OTP email; it does not log in.
   const signup = async (payload) => {
-    const response = await authAPI.signup(payload);
-    const { token: newToken, user: userData } = response;
+    const data = await authAPI.signup(payload);
+    return data;
+  };
 
+  const verifyOtpAndLogin = async (email, otp) => {
+    const { token: newToken, user: userData } = await authAPI.verifyOtp(email, otp);
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
+    return userData;
   };
 
   const logout = () => {
@@ -98,6 +101,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     signup,
+    verifyOtpAndLogin,
     logout,
     updateUser,
   };
