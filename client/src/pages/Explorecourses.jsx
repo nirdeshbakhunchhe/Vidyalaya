@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -186,56 +187,81 @@ const ExploreCourses = () => {
                 {courses.map((course) => (
                   <div
                     key={course.id}
-                    className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                    className="group bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
                   >
-                    {/* Course Image with Gradient Overlay */}
+                    {/* Course Thumbnail */}
                     <div className="relative h-48 overflow-hidden">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${course.color || 'from-blue-500 to-cyan-500'} opacity-90`}></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <h3 className="text-white text-xl font-bold text-center px-4">{course.title}</h3>
-                      </div>
-                      <span className="absolute top-4 right-4 px-3 py-1 bg-white/90 dark:bg-slate-800/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">
+                      {course.image ? (
+                        <>
+                          {/* Actual thumbnail — visible, no heavy overlay */}
+                          <img
+                            src={course.image}
+                            alt={course.title}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          {/* Subtle bottom scrim so badges stay readable */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                        </>
+                      ) : (
+                        /* Fallback gradient when no image */
+                        <div className={`absolute inset-0 bg-gradient-to-br ${course.color || 'from-blue-500 to-cyan-500'}`}>
+                          <div className="absolute inset-0 flex items-end p-4">
+                            <h3 className="text-white text-lg font-bold leading-snug line-clamp-2">{course.title}</h3>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Badges */}
+                      <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
+                        {course.price && Number(course.price) > 0
+                          ? `NPR ${Number(course.price).toLocaleString()}`
+                          : 'Free'}
+                      </span>
+                      <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize shadow-sm">
                         {course.level}
                       </span>
                     </div>
 
                     {/* Course Details */}
-                    <div className="p-6">
-                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">
+                    <div className="p-5">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">
+                        {course.title}
+                      </h3>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm mb-3 line-clamp-2 leading-relaxed">
                         {course.description}
                       </p>
 
-                      <div className="flex items-center space-x-2 mb-3 text-sm text-slate-600 dark:text-slate-400">
-                        <FaUsers />
-                        <span>{course.instructor}</span>
+                      <div className="flex items-center gap-1.5 mb-3 text-sm text-slate-500 dark:text-slate-400">
+                        <FaUsers className="shrink-0 text-xs" />
+                        <span className="truncate font-medium text-slate-700 dark:text-slate-300">{course.instructor}</span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
-                          <FaClock />
+                      <div className="flex items-center justify-between mb-4 text-sm text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <FaClock className="text-xs" />
                           <span>{course.duration}</span>
                         </div>
-                        <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
-                          <FaUsers />
+                        <div className="flex items-center gap-1.5">
+                          <FaUsers className="text-xs" />
                           <span>{(course.enrollmentCount ?? 0).toLocaleString()} students</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-1">
-                          <FaStar className="text-yellow-500" />
-                          <span className="font-semibold text-slate-900 dark:text-white">
+                        <div className="flex items-center gap-1">
+                          <FaStar className="text-amber-400 text-sm" />
+                          <span className="font-bold text-slate-900 dark:text-white text-sm">
                             {course.rating?.toFixed(1) ?? '0.0'}
                           </span>
-                          <span className="text-slate-600 dark:text-slate-400 text-sm">
-                            ({course.totalRatings ?? 0} ratings)
+                          <span className="text-slate-400 text-xs">
+                            ({course.totalRatings ?? 0})
                           </span>
                         </div>
                       </div>
 
                       <button
                         onClick={() => handleCourseClick(course.id)}
-                        className="w-full bg-gradient-to-r from-primary-600 to-primary-500 text-white py-3 px-4 rounded-lg font-semibold hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all shadow-lg hover:shadow-xl"
+                        className="w-full bg-gradient-to-r from-primary-600 to-primary-500 text-white py-2.5 px-4 rounded-lg font-semibold hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2"
                       >
                         View Course
                       </button>
@@ -373,56 +399,75 @@ const ExploreCourses = () => {
                   {courses.map((course) => (
                     <div
                       key={course.id}
-                      className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                      className="group bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
                     >
-                      {/* Course Image with Gradient Overlay */}
+                      {/* Course Thumbnail */}
                       <div className="relative h-48 overflow-hidden">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${course.color || 'from-blue-500 to-cyan-500'} opacity-90`}></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <h3 className="text-white text-xl font-bold text-center px-4">{course.title}</h3>
-                        </div>
-                        <span className="absolute top-4 right-4 px-3 py-1 bg-white/90 dark:bg-slate-800/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">
+                        {course.image ? (
+                          <>
+                            <img
+                              src={course.image}
+                              alt={course.title}
+                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            {/* Subtle bottom scrim for badge readability */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                          </>
+                        ) : (
+                          <div className={`absolute inset-0 bg-gradient-to-br ${course.color || 'from-blue-500 to-cyan-500'}`}>
+                            <div className="absolute inset-0 flex items-end p-4">
+                              <h3 className="text-white text-lg font-bold leading-snug line-clamp-2">{course.title}</h3>
+                            </div>
+                          </div>
+                        )}
+                        <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
+                          {course.price && Number(course.price) > 0
+                            ? `NPR ${Number(course.price).toLocaleString()}`
+                            : 'Free'}
+                        </span>
+                        <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize shadow-sm">
                           {course.level}
                         </span>
                       </div>
 
                       {/* Course Details */}
-                      <div className="p-6">
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">
+                      <div className="p-5">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">
+                          {course.title}
+                        </h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-3 line-clamp-2 leading-relaxed">
                           {course.description}
                         </p>
 
-                        <div className="flex items-center space-x-2 mb-3 text-sm text-slate-600 dark:text-slate-400">
-                          <FaUsers />
-                          <span>{course.instructor}</span>
+                        <div className="flex items-center gap-1.5 mb-3 text-sm text-slate-500 dark:text-slate-400">
+                          <FaUsers className="shrink-0 text-xs" />
+                          <span className="truncate font-medium text-slate-700 dark:text-slate-300">{course.instructor}</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
-                            <FaClock />
+                        <div className="flex items-center justify-between mb-4 text-sm text-slate-500 dark:text-slate-400">
+                          <div className="flex items-center gap-1.5">
+                            <FaClock className="text-xs" />
                             <span>{course.duration}</span>
                           </div>
-                          <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
-                            <FaUsers />
+                          <div className="flex items-center gap-1.5">
+                            <FaUsers className="text-xs" />
                             <span>{(course.enrollmentCount ?? 0).toLocaleString()} students</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-1">
-                            <FaStar className="text-yellow-500" />
-                            <span className="font-semibold text-slate-900 dark:text-white">
-                              {course.rating?.toFixed(1) ?? '0.0'}
-                            </span>
-                            <span className="text-slate-600 dark:text-slate-400 text-sm">
-                              ({course.totalRatings ?? 0} ratings)
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-1 mb-4">
+                          <FaStar className="text-amber-400 text-sm" />
+                          <span className="font-bold text-slate-900 dark:text-white text-sm">
+                            {course.rating?.toFixed(1) ?? '0.0'}
+                          </span>
+                          <span className="text-slate-400 text-xs">
+                            ({course.totalRatings ?? 0} ratings)
+                          </span>
                         </div>
 
                         <button
                           onClick={() => handleCourseClick(course.id)}
-                          className="w-full bg-gradient-to-r from-primary-600 to-primary-500 text-white py-3 px-4 rounded-lg font-semibold hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                          className="w-full bg-gradient-to-r from-primary-600 to-primary-500 text-white py-2.5 px-4 rounded-lg font-semibold hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2"
                         >
                           <FaLock className="text-xs" />
                           View Details (Login to Enroll)
