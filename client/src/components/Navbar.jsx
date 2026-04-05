@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo/logo1.png';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaSun, FaMoon } from 'react-icons/fa';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, toggleTheme } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -65,6 +66,19 @@ const Navbar = () => {
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden md:flex items-center gap-3">
+            {isAuthenticated && (
+              <>
+                <NotificationBell />
+                <button
+                  onClick={toggleTheme}
+                  aria-label="Toggle Theme"
+                  className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                >
+                  {user?.themePreference === 'dark' ? <FaSun size={18} /> : <FaMoon size={18} />}
+                </button>
+              </>
+            )}
+            
             {isAuthenticated ? (
               <Link
                 to="/dashboard"
@@ -141,6 +155,22 @@ const Navbar = () => {
                       Sign up
                     </Link>
                   </>
+                )}
+                
+                {isAuthenticated && (
+                  <button
+                    onClick={() => {
+                      toggleTheme();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2 mt-2 rounded-lg text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    {user?.themePreference === 'dark' ? (
+                      <><FaSun size={16} /> Light Mode</>
+                    ) : (
+                      <><FaMoon size={16} /> Dark Mode</>
+                    )}
+                  </button>
                 )}
               </div>
             </nav>
