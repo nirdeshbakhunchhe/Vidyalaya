@@ -1,0 +1,19 @@
+{
+  "asset_id": "f362ffecf7b379e2d40a759b65b5ea5a",
+  "public_id": "test_doc_file",
+  "version": 1775363024,
+  "version_id": "98b704871c2067ee56552048adf0c8ed",
+  "signature": "86e1a4ba46314bf9f531aad1a269cd6c60e66768",
+  "resource_type": "raw",
+  "created_at": "2026-04-05T04:23:44Z",
+  "tags": [],
+  "bytes": 13,
+  "type": "upload",
+  "etag": "ee4af196a91c126328eabfcd112bdf87",
+  "placeholder": false,
+  "url": "http://res.cloudinary.com/dlnxztsug/raw/upload/v1775363024/test_doc_file",
+  "secure_url": "https://res.cloudinary.com/dlnxztsug/raw/upload/v1775363024/test_doc_file",
+  "asset_folder": "",
+  "display_name": "test_doc_file",
+  "api_key": "584993868668526"
+}

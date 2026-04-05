@@ -1,0 +1,23 @@
+{
+  "asset_id": "6fb6a6a7542e212f75b9289656568178",
+  "public_id": "test_pdf_image",
+  "version": 1775362958,
+  "version_id": "410b95cef97771257358de99a8236c78",
+  "signature": "9338f6c8ca20ca5240d61946e2d5073e29ad8e65",
+  "width": 612,
+  "height": 792,
+  "format": "pdf",
+  "resource_type": "image",
+  "created_at": "2026-04-05T04:22:38Z",
+  "tags": [],
+  "pages": 1,
+  "bytes": 130,
+  "type": "upload",
+  "etag": "f4e486fddb1f3d9d438926f053d53c6a",
+  "placeholder": false,
+  "url": "http://res.cloudinary.com/dlnxztsug/image/upload/v1775362958/test_pdf_image.pdf",
+  "secure_url": "https://res.cloudinary.com/dlnxztsug/image/upload/v1775362958/test_pdf_image.pdf",
+  "asset_folder": "",
+  "display_name": "test_pdf_image",
+  "api_key": "584993868668526"
+}

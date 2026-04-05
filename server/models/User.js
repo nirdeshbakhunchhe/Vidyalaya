@@ -44,6 +44,29 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    
+    // ── Engagement Features ──────────────────────────────────────────────────
+    themePreference: {
+      type: String,
+      enum: ['light', 'dark'],
+      default: 'light',
+    },
+    loginStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastLoginDate: {
+      type: Date,
+      default: null,
+    },
+    badges: [
+      {
+        badgeType: { type: String, required: true },
+        name: { type: String, required: true },
+        icon: { type: String },
+        awardedAt: { type: Date, default: Date.now },
+      }
+    ],
 
     // ── Teacher-specific fields ──────────────────────────────────────────────
     degree: {

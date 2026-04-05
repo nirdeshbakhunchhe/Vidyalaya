@@ -1,0 +1,20 @@
+{
+  "asset_id": "aba8d87a41be44b54c579c3c2e52ebdb",
+  "public_id": "test_pdf_auto",
+  "version": 1775362859,
+  "version_id": "9c8d61d523b6732c34a357c17bd6bef5",
+  "signature": "4d827a8a1753a6b7de059073b7cb95a715c87882",
+  "resource_type": "raw",
+  "created_at": "2026-04-05T04:20:59Z",
+  "tags": [],
+  "bytes": 130,
+  "type": "upload",
+  "etag": "f4e486fddb1f3d9d438926f053d53c6a",
+  "placeholder": false,
+  "url": "http://res.cloudinary.com/dlnxztsug/raw/upload/v1775362859/test_pdf_auto",
+  "secure_url": "https://res.cloudinary.com/dlnxztsug/raw/upload/v1775362859/test_pdf_auto",
+  "asset_folder": "",
+  "display_name": "test_pdf_auto",
+  "overwritten": true,
+  "api_key": "584993868668526"
+}

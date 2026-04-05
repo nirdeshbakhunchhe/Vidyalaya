@@ -64,6 +64,11 @@ export const authAPI = {
     return data.user;
   },
 
+  updateTheme: async (themePreference) => {
+    const { data } = await api.put('/auth/theme', { themePreference });
+    return data;
+  },
+
   changePassword: async (currentPassword, newPassword) => {
     const { data } = await api.put('/auth/change-password', { currentPassword, newPassword });
     return data;
@@ -73,9 +78,7 @@ export const authAPI = {
   uploadAvatar: async (file) => {
     const formData = new FormData();
     formData.append('avatar', file);
-    const { data } = await api.post('/auth/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await api.post('/auth/avatar', formData);
     return data.user;
   },
 };
@@ -157,6 +160,35 @@ export const courseAPI = {
     return data;
   },
 
+  // Protected (teacher/admin): upload/replace course thumbnail (Cloudinary image)
+  uploadCourseThumbnail: async (courseId, file, { onUploadProgress } = {}) => {
+    const formData = new FormData();
+    formData.append('thumbnail', file);
+    const { data } = await api.post(`/courses/${courseId}/thumbnail`, formData, {
+      onUploadProgress,
+    });
+    return data.course;
+  },
+
+  // Protected (teacher/admin): upload a single course video.
+  // Frontend can upload multiple files (1-2 mins each) with separate calls
+  // to show progress per file.
+  uploadCourseVideo: async (courseId, file, { title, onUploadProgress } = {}) => {
+    const formData = new FormData();
+    formData.append('video', file);
+    if (title) formData.append('title', title);
+    const { data } = await api.post(`/courses/${courseId}/videos`, formData, {
+      onUploadProgress,
+    });
+    return { video: data.video, course: data.course };
+  },
+
+  // Protected (student): gated course learning content (videos only if access is granted)
+  getCourseLearning: async (courseId) => {
+    const { data } = await api.get(`/courses/${courseId}/learning`);
+    return data;
+  },
+
   // Protected (student): enroll in a course
   enrollCourse: async (id) => {
     const { data } = await api.post('/enrollments', { courseId: id });
@@ -209,5 +241,172 @@ export const enrollmentAPI = {
   },
 };
 
+// ── Payment API (Khalti) ───────────────────────────────────────────────────────
+export const paymentAPI = {
+  // Initiate Khalti checkout for an approved paid enrollment
+  // POST /api/payments/initiate { enrollmentId }
+  initiate: async (enrollmentId) => {
+    const { data } = await api.post('/payments/initiate', { enrollmentId });
+    return data;
+  },
+
+  // Verify Khalti payment after redirect back to /payment/verify?pidx=...
+  // POST /api/payments/verify { pidx }
+  verify: async (pidx) => {
+    const { data } = await api.post('/payments/verify', { pidx });
+    return data;
+  },
+
+  // Optional utility: student's own payment history
+  history: async () => {
+    const { data } = await api.get('/payments/history');
+    return data;
+  },
+
+  // Teacher: payment history for courses created by the current teacher
+  teacherHistory: async () => {
+    const { data } = await api.get('/payments/teacher/history');
+    return data;
+  },
+
+  // Download PDF receipt for a completed payment
+  // Returns a Blob
+  downloadReceipt: async (paymentId) => {
+    const res = await api.get(`/payments/${paymentId}/receipt`, {
+      responseType: 'blob',
+    });
+    return res.data;
+  },
+
+  // Teacher: download payment record PDF (teacher-owned course payment)
+  // Returns a Blob
+  downloadTeacherReceipt: async (paymentId) => {
+    const res = await api.get(`/payments/teacher/${paymentId}/receipt`, {
+      responseType: 'blob',
+    });
+    return res.data;
+  },
+};
+
+// ── Assignments API ──────────────────────────────────────────────────────────
+export const assignmentAPI = {
+  // Student: list my assignments
+  getMyAssignments: async () => {
+    const { data } = await api.get('/assignments');
+    return data;
+  },
+
+  // Teacher: list assignments they created
+  getTeacherAssignments: async () => {
+    const { data } = await api.get('/assignments/teacher');
+    return data;
+  },
+
+  // Teacher: create assignment
+  createAssignment: async (payload) => {
+    const { data } = await api.post('/assignments', payload);
+    return data;
+  },
+
+  // Student: submit quiz answers
+  submitQuiz: async (assignmentId, answers) => {
+    const { data } = await api.post(`/assignments/${assignmentId}/submissions/quiz`, { answers });
+    return data;
+  },
+
+  // Student: submit project file
+  submitProject: async (assignmentId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post(
+      `/assignments/${assignmentId}/submissions/project`,
+      formData
+    );
+    return data;
+  },
+
+  // Teacher: view submissions for an assignment
+  getSubmissions: async (assignmentId) => {
+    const { data } = await api.get(`/assignments/${assignmentId}/submissions`);
+    return data;
+  },
+
+  // Teacher: grade a submission
+  gradeSubmission: async (assignmentId, submissionId, payload) => {
+    const { data } = await api.post(
+      `/assignments/${assignmentId}/submissions/${submissionId}/grade`,
+      payload
+    );
+    return data;
+  },
+};
+
+// ── Chat API (Gemini tutor) ───────────────────────────────────────────────────
+export const chatAPI = {
+  // POST /api/chat/gemini (multipart)
+  sendGemini: async ({ message, subject = 'general', files = [] }) => {
+    const formData = new FormData();
+    formData.append('message', message);
+    formData.append('subject', subject);
+    files.forEach((file) => formData.append('files', file));
+
+    const { data } = await api.post('/chat/gemini', formData);
+
+    return data;
+  },
+
+  // GET /api/chat/history?subject=general&limit=50
+  getHistory: async ({ subject = 'general', limit = 50 } = {}) => {
+    const { data } = await api.get('/chat/history', {
+      params: { subject, limit },
+    });
+    return data;
+  },
+
+  // DELETE /api/chat/history?subject=general
+  clearHistory: async ({ subject = 'general' } = {}) => {
+    const { data } = await api.delete('/chat/history', {
+      params: { subject },
+    });
+    return data;
+  },
+};
+
+// ── Progress API ─────────────────────────────────────────────────────────────
+export const progressAPI = {
+  getAllProgress: async () => {
+    const { data } = await api.get('/progress');
+    // Backend returns {success: true, progresses: [...]}
+    return data.progresses; 
+  },
+  getCourseProgress: async (courseId) => {
+    const { data } = await api.get(`/progress/${courseId}`);
+    return data.progress;
+  },
+  markLessonComplete: async (courseId, lessonTitle) => {
+    const { data } = await api.post(`/progress/${courseId}/mark-complete`, { lessonTitle });
+    return data.progress;
+  },
+  addWatchTime: async (courseId, timeSpentSeconds) => {
+    const { data } = await api.post(`/progress/${courseId}/time`, { timeSpent: timeSpentSeconds });
+    return data.progress;
+  }
+};
+
 export default api;
 
+// ── Notification API ─────────────────────────────────────────────────────────
+export const notificationAPI = {
+  getAll: async () => {
+    const { data } = await api.get('/notifications');
+    return data.notifications;
+  },
+  markAsRead: async (id) => {
+    const { data } = await api.put(`/notifications/${id}/read`);
+    return data.notification;
+  },
+  markAllAsRead: async () => {
+    const { data } = await api.put('/notifications/read-all');
+    return data;
+  }
+};

@@ -1,0 +1,24 @@
+[
+  {
+    "file": {
+      "url": "https://res.cloudinary.com/dlnxztsug/raw/upload/v1775362497/assignment_submissions/assignment_69d1e19f4020d5243f5dbac8_student_69cc8c54d253eb1d0685170f_1775362494721.pdf",
+      "publicId": "assignment_submissions/assignment_69d1e19f4020d5243f5dbac8_student_69cc8c54d253eb1d0685170f_1775362494721.pdf",
+      "originalName": "vidyalaya-receipt-5JLpbiYKtZkw49NynKGjMN (1).pdf",
+      "mimetype": "application/pdf"
+    },
+    "_id": "69d1e1c14020d5243f5dbb3c",
+    "assignment": "69d1e19f4020d5243f5dbac8",
+    "student": "69cc8c54d253eb1d0685170f",
+    "status": "submitted",
+    "score": null,
+    "correctCount": null,
+    "totalQuestions": null,
+    "feedback": "",
+    "gradedAt": null,
+    "submittedAt": "2026-04-05T04:14:57.407Z",
+    "quizAnswers": [],
+    "createdAt": "2026-04-05T04:14:57.412Z",
+    "updatedAt": "2026-04-05T04:14:57.412Z",
+    "__v": 0
+  }
+]
