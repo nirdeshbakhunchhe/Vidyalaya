@@ -1,72 +1,162 @@
-import { useState, useEffect, useRef } from 'react';
+// ProfilePage.jsx
+
+// ── React & routing ───────────────────────────────────────────────────────────
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// ── Auth & API ────────────────────────────────────────────────────────────────
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
+
+// ── Layout shell & components ─────────────────────────────────────────────────
 import StudentShell from '../components/StudentShell';
+import CloudinaryAvatarUpload from '../components/uploads/CloudinaryAvatarUpload';
+
+// ── Icons (react-icons/fa only) ───────────────────────────────────────────────
 import {
-  FaUser, FaEnvelope, FaLock, FaCamera, FaCheckCircle,
-  FaExclamationCircle, FaSpinner, FaShieldAlt, FaBell,
-  FaTrash, FaGraduationCap, FaBriefcase, FaChalkboardTeacher,
+  FaUser,
+  FaEnvelope,
+  FaLock,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaExclamationCircle,
+  FaSpinner,
+  FaShieldAlt,
+  FaBell,
+  FaTrash,
+  FaGraduationCap,
+  FaBriefcase,
+  FaChalkboardTeacher,
 } from 'react-icons/fa';
 
+// =============================================================================
+// Constants
+// =============================================================================
+
+// Sidebar navigation sections
+const SECTIONS = [
+  { id: 'profile',       label: 'Profile Info',    icon: FaUser      },
+  { id: 'password',      label: 'Password',        icon: FaLock      },
+  { id: 'notifications', label: 'Notifications',   icon: FaBell      },
+  { id: 'account',       label: 'Account',         icon: FaShieldAlt },
+];
+
+// Notification preference list — label + description pairs
+const NOTIF_ITEMS = [
+  { key: 'newLesson',         label: 'New Lesson Added',         desc: 'When a new lesson is added to your enrolled course' },
+  { key: 'deadlineReminder',  label: 'Deadline Reminders',       desc: 'Reminders about upcoming quiz and assignment deadlines' },
+  { key: 'announcements',     label: 'Instructor Announcements', desc: 'When your instructor posts an announcement' },
+  { key: 'weeklyReport',      label: 'Weekly Progress Report',   desc: 'A summary of your learning activity every week' },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared Tailwind string for all text inputs.
+// focus:ring-blue-500 replaces the former primary-500 token.
+// ─────────────────────────────────────────────────────────────────────────────
+const INPUT_CLASS =
+  'w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm ' +
+  'bg-white text-slate-900 placeholder-slate-400 outline-none transition-all ' +
+  'focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300';
+
+// =============================================================================
+// Sub-components
+// =============================================================================
+
+// ── StatusBanner ──────────────────────────────────────────────────────────────
+// Reusable inline success / error feedback banner used in both form sections.
+const StatusBanner = ({ success, error }) => (
+  <>
+    {success && (
+      <div
+        role="status"
+        className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2"
+      >
+        <FaCheckCircle className="flex-shrink-0" /><span>{success}</span>
+      </div>
+    )}
+    {error && (
+      <div
+        role="alert"
+        className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2"
+      >
+        <FaExclamationCircle className="flex-shrink-0" /><span>{error}</span>
+      </div>
+    )}
+  </>
+);
+
+// ── PasswordRule ──────────────────────────────────────────────────────────────
+// Single row in the password strength checklist — uses icons instead of emoji.
+const PasswordRule = ({ met, label }) => (
+  <p className={`flex items-center gap-1.5 text-xs ${met ? 'text-green-600' : 'text-slate-400'}`}>
+    {met
+      ? <FaCheckCircle  className="text-green-500 text-[10px]" />
+      : <FaTimesCircle  className="text-slate-300 text-[10px]" />
+    }
+    {label}
+  </p>
+);
+
+// ── PrimaryButton ─────────────────────────────────────────────────────────────
+// Consistent CTA button used in profile and password forms.
+const PrimaryButton = ({ loading, loadingLabel, idleIcon: IdleIcon, idleLabel, ...rest }) => (
+  <button
+    {...rest}
+    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow hover:shadow-md flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+  >
+    {loading ? (
+      <><FaSpinner className="animate-spin" /><span>{loadingLabel}</span></>
+    ) : (
+      <><IdleIcon /><span>{idleLabel}</span></>
+    )}
+  </button>
+);
+
+// =============================================================================
+// ProfilePage
+// =============================================================================
 const ProfilePage = () => {
   const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
 
   const isTeacher = user?.role === 'teacher';
 
   const [activeSection, setActiveSection] = useState('profile');
 
-  // ── Profile state ────────────────────────────────────────────────────────
-  const [profileData, setProfileData] = useState({
-    name: '',
-    email: '',
-    degree: '',
-    yearsOfTeaching: '',
-    experienceDescription: '',
-  });
+  // ── Profile form state ──────────────────────────────────────────────────────
+  const [profileData,    setProfileData]    = useState({ name: '', email: '', degree: '', yearsOfTeaching: '', experienceDescription: '' });
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [profileError,   setProfileError]   = useState('');
 
+  // Pre-fill form when user data is available
   useEffect(() => {
     if (user) {
       setProfileData({
-        name: user.name || '',
-        email: user.email || '',
-        degree: user.degree || '',
-        yearsOfTeaching: user.yearsOfTeaching ?? '',
+        name:                  user.name                  || '',
+        email:                 user.email                 || '',
+        degree:                user.degree                || '',
+        yearsOfTeaching:       user.yearsOfTeaching       ?? '',
         experienceDescription: user.experienceDescription || '',
       });
     }
   }, [user]);
 
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileSuccess, setProfileSuccess] = useState('');
-  const [profileError, setProfileError] = useState('');
-
-  // ── Avatar state ─────────────────────────────────────────────────────────
-  const [avatarPreview, setAvatarPreview] = useState('');
-  const [avatarLoading, setAvatarLoading] = useState(false);
-  const [avatarError, setAvatarError] = useState('');
-
-  // ── Password state ───────────────────────────────────────────────────────
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  // ── Password form state ─────────────────────────────────────────────────────
+  const [passwordData,    setPasswordData]    = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordError,   setPasswordError]   = useState('');
 
-  // ── Notification prefs (mock) ────────────────────────────────────────────
-  const [notifPrefs, setNotifPrefs] = useState({
-    newLesson: true,
-    deadlineReminder: true,
-    announcements: false,
-    weeklyReport: true,
-  });
+  // ── Notification preferences (mock — not wired to API yet) ─────────────────
+  const [notifPrefs, setNotifPrefs] = useState({ newLesson: true, deadlineReminder: true, announcements: false, weeklyReport: true });
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Delete account confirmation state ──────────────────────────────────────
+  // Using in-component state instead of window.alert() for consistent UX
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // ── Handlers (logic unchanged) ──────────────────────────────────────────────
+
   const handleProfileSave = async (e) => {
     e.preventDefault();
     setProfileLoading(true);
@@ -74,11 +164,11 @@ const ProfilePage = () => {
     setProfileError('');
     try {
       const payload = {
-        name: profileData.name,
+        name:  profileData.name,
         email: profileData.email,
         ...(isTeacher && {
-          degree: profileData.degree,
-          yearsOfTeaching: Number(profileData.yearsOfTeaching) || 0,
+          degree:                profileData.degree,
+          yearsOfTeaching:       Number(profileData.yearsOfTeaching) || 0,
           experienceDescription: profileData.experienceDescription,
         }),
       };
@@ -92,43 +182,14 @@ const ProfilePage = () => {
     }
   };
 
-  const handleAvatarSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Show the new photo immediately everywhere (profile + top nav)
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarPreview(previewUrl);
-    updateUser({ ...(user || {}), avatar: previewUrl });
-
-    setAvatarLoading(true);
-    setAvatarError('');
-    try {
-      // Persist avatar on the server and update with the final URL
-      const updatedUser = await authAPI.uploadAvatar(file);
-      updateUser(updatedUser);
-    } catch (err) {
-      // Revert to previous user state on failure
-      setAvatarError(err.response?.data?.message || 'Failed to upload avatar');
-      setAvatarPreview('');
-      if (user) {
-        updateUser(user);
-      }
-    } finally {
-      setAvatarLoading(false);
-    }
-  };
-
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordError('');
     setPasswordSuccess('');
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+    if (passwordData.newPassword !== passwordData.confirmPassword)
       return setPasswordError('New passwords do not match');
-    }
-    if (passwordData.newPassword.length < 6) {
+    if (passwordData.newPassword.length < 6)
       return setPasswordError('Password must be at least 6 characters');
-    }
     setPasswordLoading(true);
     try {
       await authAPI.changePassword(passwordData.currentPassword, passwordData.newPassword);
@@ -141,90 +202,40 @@ const ProfilePage = () => {
     }
   };
 
-  // ── Sidebar sections ─────────────────────────────────────────────────────
-  const sections = [
-    { id: 'profile', label: 'Profile Info', icon: FaUser },
-    { id: 'password', label: 'Password', icon: FaLock },
-    { id: 'notifications', label: 'Notifications', icon: FaBell },
-    { id: 'account', label: 'Account', icon: FaShieldAlt },
-  ];
-
-  // Compute avatar display (supports both absolute and legacy relative URLs)
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  const API_ROOT = API_BASE.replace(/\/api\/?$/, '');
-  const rawAvatar = avatarPreview || user?.avatar || '';
-  const avatarSrc =
-    rawAvatar && !rawAvatar.startsWith('http')
-      ? `${API_ROOT}${rawAvatar}`
-      : rawAvatar;
-  const avatarInitial = user?.name?.charAt(0)?.toUpperCase() || 'U';
-
-  const inputClass =
-    'w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm';
-
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <StudentShell>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-        {/* Page Header */}
+        {/* Page heading */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">My Profile</h2>
-          <p className="text-slate-500 dark:text-slate-400">Manage your account settings and preferences</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-1">My Profile</h2>
+          <p className="text-slate-500 text-sm">Manage your account settings and preferences</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-          {/* ── Sidebar ── */}
-          <div className="lg:col-span-1">
+          {/* ── Sidebar ────────────────────────────────────────────────────── */}
+          <div className="lg:col-span-1 space-y-4">
 
-            {/* Avatar Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 text-center mb-4">
-              <div className="relative inline-block mb-4">
-                {/* Avatar image or initial */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold mx-auto overflow-hidden ring-4 ring-primary-100 dark:ring-primary-900/30">
-                  {avatarSrc ? (
-                    <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    avatarInitial
-                  )}
-                </div>
-
-                {/* Camera button */}
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={avatarLoading}
-                  className="absolute bottom-0 right-0 w-7 h-7 bg-primary-600 text-white rounded-full flex items-center justify-center hover:bg-primary-700 transition-colors shadow-lg disabled:opacity-60"
-                  title="Upload photo"
-                >
-                  {avatarLoading ? (
-                    <FaSpinner className="text-xs animate-spin" />
-                  ) : (
-                    <FaCamera className="text-xs" />
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarSelect}
-                  className="hidden"
-                />
-              </div>
-
-              {avatarError && (
-                <p className="text-xs text-red-500 mb-2">{avatarError}</p>
-              )}
-
-              <h3 className="font-bold text-slate-900 dark:text-white">{user?.name}</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{user?.email}</p>
+            {/* Avatar + identity card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+              <CloudinaryAvatarUpload user={user} onUserUpdated={updateUser} />
+              <h3 className="font-bold text-slate-900 mt-2">{user?.name}</h3>
+              <p className="text-sm text-slate-500">{user?.email}</p>
 
               {/* Role badge */}
-              <span className={`inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                isTeacher
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                  : 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-              }`}>
-                {isTeacher ? <FaChalkboardTeacher className="text-xs" /> : <FaGraduationCap className="text-xs" />}
+              <span
+                className={`inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                  isTeacher
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-blue-100 text-blue-700'
+                }`}
+              >
+                {isTeacher
+                  ? <FaChalkboardTeacher className="text-[10px]" />
+                  : <FaGraduationCap     className="text-[10px]" />
+                }
                 {user?.role}
               </span>
 
@@ -236,133 +247,122 @@ const ProfilePage = () => {
               </p>
             </div>
 
-            {/* Nav */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2">
-              {sections.map((s) => (
+            {/* Section navigation */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2">
+              {SECTIONS.map(({ id, label, icon: Icon }) => (
                 <button
-                  key={s.id}
-                  onClick={() => setActiveSection(s.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left ${
-                    activeSection === s.id
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                  }`}
+                  key={id}
+                  onClick={() => setActiveSection(id)}
+                  aria-current={activeSection === id ? 'page' : undefined}
+                  className={[
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left',
+                    activeSection === id
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-slate-600 hover:bg-slate-50',
+                  ].join(' ')}
                 >
-                  <s.icon className="text-sm flex-shrink-0" />
-                  <span>{s.label}</span>
+                  <Icon className="text-sm flex-shrink-0" />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ── Main Content ── */}
+          {/* ── Main content area ───────────────────────────────────────────── */}
           <div className="lg:col-span-3">
 
-            {/* ── Profile Info Section ── */}
+            {/* ══ Profile Info ════════════════════════════════════════════════ */}
             {activeSection === 'profile' && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center space-x-2">
-                  <FaUser className="text-primary-500" /><span>Profile Information</span>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+                  <FaUser className="text-blue-500" /><span>Profile Information</span>
                 </h3>
 
-                {profileSuccess && (
-                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-700 dark:text-green-400 text-sm flex items-center space-x-2">
-                    <FaCheckCircle /><span>{profileSuccess}</span>
-                  </div>
-                )}
-                {profileError && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-center space-x-2">
-                    <FaExclamationCircle /><span>{profileError}</span>
-                  </div>
-                )}
+                <StatusBanner success={profileSuccess} error={profileError} />
 
                 <form onSubmit={handleProfileSave} className="space-y-5">
-                  {/* Name */}
+
+                  {/* Full name */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
                     <div className="relative">
-                      <FaUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                      <FaUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                       <input
                         type="text"
                         value={profileData.name}
                         onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))}
-                        className={inputClass}
                         placeholder="Your full name"
+                        className={INPUT_CLASS}
                       />
                     </div>
                   </div>
 
                   {/* Email */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
                     <div className="relative">
-                      <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                      <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                       <input
                         type="email"
                         value={profileData.email}
                         onChange={(e) => setProfileData((p) => ({ ...p, email: e.target.value }))}
-                        className={inputClass}
                         placeholder="your@email.com"
+                        className={INPUT_CLASS}
                       />
                     </div>
                   </div>
 
-                  {/* Role (read-only) */}
+                  {/* Role — read-only, cannot be changed post-registration */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Role</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
                     <input
                       type="text"
                       value={user?.role || 'student'}
                       disabled
-                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-sm capitalize cursor-not-allowed"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-400 text-sm capitalize cursor-not-allowed"
                     />
                     <p className="text-xs text-slate-400 mt-1">Role cannot be changed after registration</p>
                   </div>
 
-                  {/* ── Teacher-only fields ── */}
+                  {/* Teacher-only fields */}
                   {isTeacher && (
-                    <>
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
-                          Teacher Details
-                        </p>
-                      </div>
+                    <div className="space-y-5 pt-4 border-t border-slate-100">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        Teacher Details
+                      </p>
 
-                      {/* Degree */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Degree</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Degree</label>
                         <div className="relative">
-                          <FaGraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                          <FaGraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                           <input
                             type="text"
                             value={profileData.degree}
                             onChange={(e) => setProfileData((p) => ({ ...p, degree: e.target.value }))}
-                            className={inputClass}
                             placeholder="e.g. M.Sc. Computer Science"
+                            className={INPUT_CLASS}
                           />
                         </div>
                       </div>
 
-                      {/* Years of Teaching */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Years of Teaching</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Teaching</label>
                         <div className="relative">
-                          <FaBriefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                          <FaBriefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                           <input
                             type="number"
                             min="0"
                             max="60"
                             value={profileData.yearsOfTeaching}
                             onChange={(e) => setProfileData((p) => ({ ...p, yearsOfTeaching: e.target.value }))}
-                            className={inputClass}
                             placeholder="e.g. 5"
+                            className={INPUT_CLASS}
                           />
                         </div>
                       </div>
 
-                      {/* Experience Description */}
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
                           Experience Description
                           <span className="ml-2 text-xs text-slate-400 font-normal">
                             ({profileData.experienceDescription.length}/500)
@@ -373,192 +373,204 @@ const ProfilePage = () => {
                           onChange={(e) => setProfileData((p) => ({ ...p, experienceDescription: e.target.value }))}
                           rows={4}
                           maxLength={500}
-                          className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm resize-none"
                           placeholder="Describe your teaching background, subjects, and expertise…"
+                          className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 text-sm placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300"
                         />
                       </div>
-                    </>
+                    </div>
                   )}
 
                   <div className="pt-2">
-                    <button
+                    <PrimaryButton
                       type="submit"
                       disabled={profileLoading}
-                      className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center space-x-2"
-                    >
-                      {profileLoading
-                        ? <><FaSpinner className="animate-spin" /><span>Saving…</span></>
-                        : <><FaCheckCircle /><span>Save Changes</span></>
-                      }
-                    </button>
+                      loading={profileLoading}
+                      loadingLabel="Saving…"
+                      idleIcon={FaCheckCircle}
+                      idleLabel="Save Changes"
+                    />
                   </div>
                 </form>
               </div>
             )}
 
-            {/* ── Password Section ── */}
+            {/* ══ Password ════════════════════════════════════════════════════ */}
             {activeSection === 'password' && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
-                  <FaLock className="text-primary-500" /><span>Change Password</span>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                  <FaLock className="text-blue-500" /><span>Change Password</span>
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                  Choose a strong password to keep your account secure.
-                </p>
+                <p className="text-sm text-slate-500 mb-5">Choose a strong password to keep your account secure.</p>
 
-                {passwordSuccess && (
-                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-700 dark:text-green-400 text-sm flex items-center space-x-2">
-                    <FaCheckCircle /><span>{passwordSuccess}</span>
-                  </div>
-                )}
-                {passwordError && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-center space-x-2">
-                    <FaExclamationCircle /><span>{passwordError}</span>
-                  </div>
-                )}
+                <StatusBanner success={passwordSuccess} error={passwordError} />
 
                 <form onSubmit={handlePasswordChange} className="space-y-5">
                   {[
-                    { label: 'Current Password', key: 'currentPassword', placeholder: 'Enter current password' },
-                    { label: 'New Password', key: 'newPassword', placeholder: 'At least 6 characters' },
-                    { label: 'Confirm New Password', key: 'confirmPassword', placeholder: 'Repeat new password' },
+                    { label: 'Current Password',     key: 'currentPassword', placeholder: 'Enter current password' },
+                    { label: 'New Password',          key: 'newPassword',     placeholder: 'At least 6 characters'  },
+                    { label: 'Confirm New Password',  key: 'confirmPassword', placeholder: 'Repeat new password'    },
                   ].map((field) => (
                     <div key={field.key}>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        {field.label}
-                      </label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">{field.label}</label>
                       <div className="relative">
-                        <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                        <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                         <input
                           type="password"
                           value={passwordData[field.key]}
                           onChange={(e) => setPasswordData((p) => ({ ...p, [field.key]: e.target.value }))}
                           placeholder={field.placeholder}
-                          className={inputClass}
+                          className={INPUT_CLASS}
                         />
                       </div>
                     </div>
                   ))}
 
+                  {/* Password strength checklist — only visible while typing */}
                   {passwordData.newPassword && (
-                    <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl text-xs text-slate-500 dark:text-slate-400 space-y-1">
-                      <p className={passwordData.newPassword.length >= 6 ? 'text-green-600 dark:text-green-400' : ''}>
-                        {passwordData.newPassword.length >= 6 ? '✅' : '❌'} At least 6 characters
-                      </p>
-                      <p className={/[A-Z]/.test(passwordData.newPassword) ? 'text-green-600 dark:text-green-400' : ''}>
-                        {/[A-Z]/.test(passwordData.newPassword) ? '✅' : '❌'} One uppercase letter
-                      </p>
-                      <p className={/[0-9]/.test(passwordData.newPassword) ? 'text-green-600 dark:text-green-400' : ''}>
-                        {/[0-9]/.test(passwordData.newPassword) ? '✅' : '❌'} One number
-                      </p>
+                    <div className="p-3 bg-slate-50 rounded-xl space-y-1.5">
+                      <PasswordRule met={passwordData.newPassword.length >= 6}          label="At least 6 characters"  />
+                      <PasswordRule met={/[A-Z]/.test(passwordData.newPassword)}        label="One uppercase letter"   />
+                      <PasswordRule met={/[0-9]/.test(passwordData.newPassword)}        label="One number"             />
                     </div>
                   )}
 
-                  <button
+                  <PrimaryButton
                     type="submit"
                     disabled={passwordLoading}
-                    className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center space-x-2"
-                  >
-                    {passwordLoading
-                      ? <><FaSpinner className="animate-spin" /><span>Updating…</span></>
-                      : <><FaShieldAlt /><span>Update Password</span></>
-                    }
-                  </button>
+                    loading={passwordLoading}
+                    loadingLabel="Updating…"
+                    idleIcon={FaShieldAlt}
+                    idleLabel="Update Password"
+                  />
                 </form>
               </div>
             )}
 
-            {/* ── Notifications Section ── */}
+            {/* ══ Notifications ════════════════════════════════════════════════ */}
             {activeSection === 'notifications' && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
-                  <FaBell className="text-primary-500" /><span>Notification Preferences</span>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                  <FaBell className="text-blue-500" /><span>Notification Preferences</span>
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Choose what updates you want to receive.</p>
+                <p className="text-sm text-slate-500 mb-6">Choose what updates you want to receive.</p>
 
-                <div className="space-y-4">
-                  {[
-                    { key: 'newLesson', label: 'New Lesson Added', desc: 'When a new lesson is added to your enrolled course' },
-                    { key: 'deadlineReminder', label: 'Deadline Reminders', desc: 'Reminders about upcoming quiz and assignment deadlines' },
-                    { key: 'announcements', label: 'Instructor Announcements', desc: 'When your instructor posts an announcement' },
-                    { key: 'weeklyReport', label: 'Weekly Progress Report', desc: 'A summary of your learning activity every week' },
-                  ].map((pref) => (
-                    <div key={pref.key} className="flex items-start justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-primary-200 dark:hover:border-primary-800 transition-colors">
+                <div className="space-y-3">
+                  {NOTIF_ITEMS.map(({ key, label, desc }) => (
+                    <div
+                      key={key}
+                      className="flex items-start justify-between p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors"
+                    >
                       <div className="flex-1 pr-4">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{pref.label}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{pref.desc}</p>
+                        <p className="text-sm font-semibold text-slate-900">{label}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
                       </div>
+                      {/* Toggle switch — custom CSS, no external library needed */}
                       <button
-                        onClick={() => setNotifPrefs((p) => ({ ...p, [pref.key]: !p[pref.key] }))}
-                        className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${notifPrefs[pref.key] ? 'bg-primary-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                        onClick={() => setNotifPrefs((p) => ({ ...p, [key]: !p[key] }))}
+                        role="switch"
+                        aria-checked={notifPrefs[key]}
+                        aria-label={label}
+                        className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
+                          notifPrefs[key] ? 'bg-blue-600' : 'bg-slate-300'
+                        }`}
                       >
-                        <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${notifPrefs[pref.key] ? 'translate-x-6' : 'translate-x-1'}`} />
+                        <span
+                          className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                            notifPrefs[key] ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
                       </button>
                     </div>
                   ))}
                 </div>
 
-                <button className="mt-6 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg flex items-center space-x-2 text-sm">
+                <button className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow flex items-center gap-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
                   <FaCheckCircle /><span>Save Preferences</span>
                 </button>
               </div>
             )}
 
-            {/* ── Account Section ── */}
+            {/* ══ Account ══════════════════════════════════════════════════════ */}
             {activeSection === 'account' && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center space-x-2">
-                    <FaShieldAlt className="text-primary-500" /><span>Account Details</span>
+
+                {/* Account details read-out */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+                    <FaShieldAlt className="text-blue-500" /><span>Account Details</span>
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-0 divide-y divide-slate-100">
                     {[
-                      { label: 'Account ID', value: user?.id || 'N/A' },
-                      { label: 'Email Verified', value: user?.isEmailVerified ? '✅ Verified' : '❌ Not Verified' },
-                      { label: 'Account Type', value: user?.role || 'student' },
-                      { label: 'Joined', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A' },
+                      { label: 'Account ID',    value: user?.id || 'N/A' },
+                      { label: 'Email Verified', value: user?.isEmailVerified ? 'Verified' : 'Not Verified', verified: user?.isEmailVerified },
+                      { label: 'Account Type',  value: user?.role || 'student' },
+                      { label: 'Joined',         value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A' },
                       ...(isTeacher ? [
-                        { label: 'Degree', value: user?.degree || 'Not set' },
+                        { label: 'Degree',              value: user?.degree || 'Not set' },
                         { label: 'Teaching Experience', value: user?.yearsOfTeaching != null ? `${user.yearsOfTeaching} years` : 'Not set' },
                       ] : []),
                     ].map((item) => (
-                      <div key={item.label} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                        <span className="text-sm text-slate-500 dark:text-slate-400">{item.label}</span>
-                        <span className="text-sm font-medium text-slate-900 dark:text-white capitalize">{item.value}</span>
+                      <div key={item.label} className="flex items-center justify-between py-3">
+                        <span className="text-sm text-slate-500">{item.label}</span>
+                        <span className={`text-sm font-medium capitalize ${item.verified === false ? 'text-red-500' : 'text-slate-900'}`}>
+                          {item.value}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Danger Zone */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-red-200 dark:border-red-900/50 p-6">
-                  <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-4 flex items-center space-x-2">
+                {/* Danger zone */}
+                <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-6">
+                  <h3 className="text-lg font-bold text-red-600 mb-4 flex items-center gap-2">
                     <FaTrash /><span>Danger Zone</span>
                   </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-xl">
+                  <div className="space-y-3">
+
+                    {/* Log out all devices */}
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">Log out of all devices</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Revoke all active sessions</p>
+                        <p className="text-sm font-semibold text-slate-900">Log out of all devices</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Revoke all active sessions</p>
                       </div>
                       <button
                         onClick={() => { logout(); navigate('/login'); }}
-                        className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm font-semibold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                        className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-300"
                       >
                         Log Out
                       </button>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-xl">
+
+                    {/* Delete account — shows an inline confirmation instead of window.alert */}
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">Delete Account</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Permanently delete your account and all data</p>
+                        <p className="text-sm font-semibold text-slate-900">Delete Account</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Permanently delete your account and all data</p>
                       </div>
-                      <button
-                        onClick={() => alert('Contact support to delete your account')}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      {showDeleteConfirm ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">Are you sure?</span>
+                          <button
+                            onClick={() => alert('Contact support to delete your account')}
+                            className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors"
+                          >
+                            Yes, delete
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-300 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
