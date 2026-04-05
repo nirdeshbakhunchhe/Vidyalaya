@@ -37,6 +37,26 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Cloudinary `public_id` for the thumbnail image.
+    imagePublicId: {
+      type: String,
+      default: '',
+    },
+
+    // Uploaded course videos (Cloudinary `resource_type: "video"`).
+    videos: [
+      {
+        title: { type: String, required: true, trim: true, maxlength: 200 },
+        url: { type: String, required: true },
+        public_id: { type: String, required: true },
+      },
+    ],
+    // Course price in NPR. 0 means free course.
+    price: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     color: {
       type: String,
       default: 'from-blue-500 to-cyan-500',
@@ -70,6 +90,37 @@ const courseSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+
+    // Curriculum used by CourseDetail.jsx.
+    // We generate/update this automatically when teachers upload videos
+    // (teacher can refine it later).
+    curriculum: [
+      {
+        section: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        lessons: [
+          {
+            title: {
+              type: String,
+              required: true,
+              trim: true,
+              maxlength: 200,
+            },
+            duration: {
+              type: String,
+              default: '',
+            },
+            free: {
+              type: Boolean,
+              default: false,
+            },
+          },
+        ],
+      },
+    ],
   },
   {
     timestamps: true,

@@ -3,9 +3,8 @@
 import express from 'express';
 import multer from 'multer';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { protect } from '../middleware/auth.js';
+import ChatHistory from '../models/chatHistory.model.js';
 
 const router = express.Router();
 
@@ -19,30 +18,6 @@ const upload = multer({
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Middleware to verify authentication (adjust according to your auth system)
-const authenticateUser = (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized - No token provided' });
-    }
-    
-    // Add your JWT verification logic here
-    // Example:
-    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // req.user = decoded;
-    
-    // For now, we'll just pass through
-    // TODO: Implement proper JWT verification
-    req.user = { id: 'temp_user_id', name: 'Student' }; // Replace with actual JWT decode
-    
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Unauthorized - Invalid token' });
-  }
-};
 
 // Convert file buffer to Gemini format
 const fileToGenerativePart = (buffer, mimeType) => {
@@ -71,10 +46,12 @@ const getSystemPrompt = (subject) => {
 };
 
 // POST /api/chat/gemini - Send message to Gemini AI
-router.post('/gemini', authenticateUser, upload.array('files', 5), async (req, res) => {
+router.post('/gemini', protect, upload.array('files', 5), async (req, res) => {
   try {
     const { message, subject = 'general' } = req.body;
     const files = req.files || [];
+    const userId = req.user._id;
+    const normalizedSubject = String(subject || 'general').trim().toLowerCase();
 
     if (!message && files.length === 0) {
       return res.status(400).json({ error: 'Message or files required' });
@@ -95,7 +72,7 @@ router.post('/gemini', authenticateUser, upload.array('files', 5), async (req, r
     const model = genAI.getGenerativeModel({ model: modelName });
 
     // Build the prompt with system instructions
-    const systemPrompt = getSystemPrompt(subject);
+    const systemPrompt = getSystemPrompt(normalizedSubject);
     const fullPrompt = `${systemPrompt}\n\nStudent Question: ${message}`;
 
     let result;
@@ -117,14 +94,51 @@ router.post('/gemini', authenticateUser, upload.array('files', 5), async (req, r
     const response = result.response;
     const text = response.text();
 
-    // Optional: Save chat history to database
-    // TODO: Implement chat history saving
-    // await saveChatHistory(req.user.id, message, text, subject);
+    // Save chat history to database (prototype persistence).
+    const fileMetas = files.map((file) => ({
+      kind: file.mimetype && file.mimetype.startsWith('image/') ? 'image' : 'file',
+      name: file.originalname || '',
+      mimetype: file.mimetype || '',
+      size: file.size || 0,
+    }));
+
+    const userMessage = {
+      type: 'user',
+      content: String(message || ''),
+      files: fileMetas,
+      createdAt: new Date(),
+    };
+
+    const aiMessage = {
+      type: 'ai',
+      content: text,
+      files: [],
+      createdAt: new Date(),
+    };
+
+    const history = await ChatHistory.findOne({
+      user: userId,
+      subject: normalizedSubject,
+    });
+
+    if (!history) {
+      await ChatHistory.create({
+        user: userId,
+        subject: normalizedSubject,
+        messages: [userMessage, aiMessage],
+      });
+    } else {
+      // Keep last 50 messages to avoid unbounded growth.
+      await ChatHistory.updateOne(
+        { _id: history._id },
+        { $push: { messages: { $each: [userMessage, aiMessage], $slice: -50 } } }
+      );
+    }
 
     res.json({
       success: true,
       response: text,
-      subject: subject,
+      subject: normalizedSubject,
       timestamp: new Date().toISOString(),
     });
 
@@ -146,45 +160,48 @@ router.post('/gemini', authenticateUser, upload.array('files', 5), async (req, r
   }
 });
 
-// GET /api/chat/history/:courseId - Get chat history (optional - for future implementation)
-router.get('/history/:courseId', authenticateUser, async (req, res) => {
+// GET /api/chat/history?subject=general&limit=50
+router.get('/history', protect, async (req, res) => {
   try {
-    const { courseId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
+    const subject = String(req.query.subject || 'general').trim().toLowerCase();
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit || '50', 10), 200));
 
-    // TODO: Fetch from your database
-    // const chatHistory = await ChatHistory.find({ userId, courseId }).sort({ createdAt: -1 });
+    const history = await ChatHistory.findOne({ user: userId, subject }).lean();
+    const messages = history?.messages?.slice(-limit) || [];
 
-    // For now, return empty array
-    res.json({
-      success: true,
-      chatHistory: [],
-      message: 'Chat history feature coming soon',
-    });
-
+    res.json({ success: true, subject, messages });
   } catch (error) {
     console.error('Error fetching chat history:', error);
-    res.status(500).json({ error: 'Failed to fetch chat history' });
+    res.status(500).json({ success: false, error: 'Failed to fetch chat history' });
   }
 });
 
-// DELETE /api/chat/history - Clear chat history (optional - for future implementation)
-router.delete('/history', authenticateUser, async (req, res) => {
+// Convenience: GET /api/chat/history/:subject
+router.get('/history/:subject', protect, async (req, res) => {
+  const subject = String(req.params.subject || 'general').trim().toLowerCase();
+  return res.redirect(`/api/chat/history?subject=${encodeURIComponent(subject)}`);
+});
+
+// DELETE /api/chat/history?subject=general
+router.delete('/history', protect, async (req, res) => {
   try {
-    const userId = req.user.id;
-    
-    // TODO: Delete from database
-    // await ChatHistory.deleteMany({ userId });
+    const userId = req.user._id;
+    const subject = String(req.query.subject || 'general').trim().toLowerCase();
 
-    res.json({
-      success: true,
-      message: 'Chat history cleared (feature coming soon)',
-    });
+    await ChatHistory.deleteOne({ user: userId, subject });
 
+    res.json({ success: true, message: 'Chat history cleared' });
   } catch (error) {
     console.error('Error clearing chat history:', error);
-    res.status(500).json({ error: 'Failed to clear chat history' });
+    res.status(500).json({ success: false, error: 'Failed to clear chat history' });
   }
+});
+
+// Convenience: DELETE /api/chat/history/:subject
+router.delete('/history/:subject', protect, async (req, res) => {
+  const subject = String(req.params.subject || 'general').trim().toLowerCase();
+  return res.redirect(`/api/chat/history?subject=${encodeURIComponent(subject)}`);
 });
 
 // POST /api/chat/test - Test endpoint to verify Gemini API is working

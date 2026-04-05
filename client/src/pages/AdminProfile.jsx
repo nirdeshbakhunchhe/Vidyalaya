@@ -1,20 +1,18 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
-  FaCamera,
   FaCheckCircle,
   FaEnvelope,
   FaExclamationCircle,
   FaLock,
-  FaSpinner,
   FaUser,
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import AdminLayout from '../components/AdminLayout';
+import CloudinaryAvatarUpload from '../components/uploads/CloudinaryAvatarUpload';
 
 const AdminProfile = () => {
   const { user, updateUser } = useAuth();
-  const fileInputRef = useRef(null);
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -24,9 +22,6 @@ const AdminProfile = () => {
   const [profileSuccess, setProfileSuccess] = useState('');
   const [profileError, setProfileError] = useState('');
 
-  const [avatarPreview, setAvatarPreview] = useState('');
-  const [avatarLoading, setAvatarLoading] = useState(false);
-  const [avatarError, setAvatarError] = useState('');
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -37,8 +32,6 @@ const AdminProfile = () => {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const avatarSrc = avatarPreview || user?.avatar || '';
-  const avatarInitial = user?.name?.charAt(0)?.toUpperCase() || 'A';
 
   const inputClass =
     'w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm';
@@ -60,23 +53,6 @@ const AdminProfile = () => {
       setProfileError(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setProfileLoading(false);
-    }
-  };
-
-  const handleAvatarSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setAvatarPreview(URL.createObjectURL(file));
-    setAvatarLoading(true);
-    setAvatarError('');
-    try {
-      const updated = await authAPI.uploadAvatar(file);
-      updateUser(updated);
-    } catch (err) {
-      setAvatarError(err.response?.data?.message || 'Failed to upload avatar');
-      setAvatarPreview('');
-    } finally {
-      setAvatarLoading(false);
     }
   };
 
@@ -123,34 +99,7 @@ const AdminProfile = () => {
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-6">
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold overflow-hidden ring-4 ring-primary-100 dark:ring-primary-900/30">
-                {avatarSrc ? (
-                  <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
-                ) : (
-                  avatarInitial
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={avatarLoading}
-                className="absolute bottom-0 right-0 w-7 h-7 bg-primary-600 text-white rounded-full flex items-center justify-center hover:bg-primary-700 transition-colors shadow-lg disabled:opacity-60"
-              >
-                {avatarLoading ? (
-                  <FaSpinner className="text-xs animate-spin" />
-                ) : (
-                  <FaCamera className="text-xs" />
-                )}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarSelect}
-                className="hidden"
-              />
-            </div>
+            <CloudinaryAvatarUpload user={user} onUserUpdated={updateUser} />
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white">{user?.name}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
@@ -159,13 +108,6 @@ const AdminProfile = () => {
               </p>
             </div>
           </div>
-
-          {avatarError && (
-            <div className="text-xs text-red-500 flex items-center gap-2">
-              <FaExclamationCircle />
-              <span>{avatarError}</span>
-            </div>
-          )}
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-6">
@@ -325,4 +267,3 @@ const AdminProfile = () => {
 };
 
 export default AdminProfile;
-

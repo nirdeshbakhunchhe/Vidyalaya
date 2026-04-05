@@ -35,6 +35,33 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [token]);
 
+  // Apply theme class to document
+  useEffect(() => {
+    const root = document.documentElement;
+    if (user?.themePreference === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [user?.themePreference]);
+
+  const toggleTheme = async () => {
+    if (!user) return;
+    const newTheme = user.themePreference === 'dark' ? 'light' : 'dark';
+    
+    // Optimistic UI update
+    const previousTheme = user.themePreference;
+    setUser(prev => ({ ...prev, themePreference: newTheme }));
+    
+    try {
+      await authAPI.updateTheme(newTheme);
+    } catch (error) {
+      console.error('Failed to update theme:', error);
+      // Revert optimistic update
+      setUser(prev => ({ ...prev, themePreference: previousTheme }));
+    }
+  };
+
   const login = async (email, password) => {
     try {
       const response = await authAPI.login(email, password);
@@ -104,6 +131,7 @@ export const AuthProvider = ({ children }) => {
     verifyOtpAndLogin,
     logout,
     updateUser,
+    toggleTheme,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
