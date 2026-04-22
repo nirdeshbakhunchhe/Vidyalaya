@@ -67,28 +67,28 @@ const EMPTY_FORM = {
 // Level badge colour map — defined at module level so it is not re-created
 // on every render of TeacherDashboard.
 const LEVEL_COLORS = {
-  beginner:     'bg-green-100 text-green-700',
-  intermediate: 'bg-amber-100 text-amber-700',
-  advanced:     'bg-red-100   text-red-700',
+  beginner:     'bg-green-100 dark:bg-green-900/30 text-green-700',
+  intermediate: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700',
+  advanced:     'bg-red-100 dark:bg-red-900/30   text-red-700',
 };
 
 // Shared Tailwind class string for form inputs inside the modal
 const MODAL_INPUT_CLASS =
-  'w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm ' +
-  'bg-white text-slate-900 placeholder-slate-400 outline-none transition-all ' +
-  'focus:ring-2 focus:ring-amber-500 focus:border-transparent hover:border-slate-300';
+  'w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm ' +
+  'bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all ' +
+  'focus:ring-2 focus:ring-amber-500 focus:border-transparent hover:border-slate-300 dark:border-slate-600';
 
 // =============================================================================
 // StatCard — summary metric tile used in the dashboard stats row
 // =============================================================================
 const StatCard = ({ icon: Icon, label, value, gradient, sub }) => (
-  <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex items-center space-x-4 hover:shadow-md transition-shadow">
+  <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-4 hover:shadow-md transition-shadow">
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${gradient}`}>
       <Icon className="text-white text-xl" />
     </div>
     <div className="min-w-0">
-      <p className="text-2xl font-bold text-slate-900">{value}</p>
-      <p className="text-sm text-slate-500">{label}</p>
+      <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
       {sub && <p className="text-xs text-green-600 font-medium mt-0.5">{sub}</p>}
     </div>
   </div>
@@ -97,11 +97,18 @@ const StatCard = ({ icon: Icon, label, value, gradient, sub }) => (
 // =============================================================================
 // CourseModal — create / edit course form rendered in a centred overlay
 // =============================================================================
-const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
+const CourseModal = ({ initial, instructorName, onClose, onSave, loading, error }) => {
   const [form, setForm] = useState(initial || EMPTY_FORM);
   const isEdit = !!initial?.id;
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  // Auto-fill instructor for new courses from the logged-in teacher.
+  useEffect(() => {
+    if (!isEdit && instructorName) {
+      setForm((p) => ({ ...p, instructor: p.instructor || instructorName }));
+    }
+  }, [isEdit, instructorName]);
 
   return (
     <div
@@ -110,20 +117,20 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
       aria-modal="true"
       aria-label={isEdit ? 'Edit course' : 'Create new course'}
     >
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
 
         {/* Modal header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <FaBook className="text-amber-500" />
             {isEdit ? 'Edit Course' : 'Create New Course'}
           </h3>
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+            className="p-2 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
           >
-            <FaTimes className="text-slate-500" />
+            <FaTimes className="text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -132,7 +139,7 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
           {error && (
             <div
               role="alert"
-              className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2"
+              className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl text-red-700 text-sm flex items-center gap-2"
             >
               <FaExclamationCircle /><span>{error}</span>
             </div>
@@ -142,7 +149,7 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
 
             {/* Title */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Course Title *</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course Title *</label>
               <input
                 type="text"
                 value={form.title}
@@ -155,7 +162,7 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
 
             {/* Description */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Description *{' '}
                 <span className="text-xs text-slate-400 font-normal">
                   ({form.description.length}/1000)
@@ -167,13 +174,13 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
                 rows={3}
                 maxLength={1000}
                 placeholder="What will students learn from this course?"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-900 placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-amber-500 focus:border-transparent hover:border-slate-300"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-amber-500 focus:border-transparent hover:border-slate-300 dark:border-slate-600"
               />
             </div>
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Category *</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category *</label>
               <select
                 value={form.category}
                 onChange={(e) => set('category', e.target.value)}
@@ -187,7 +194,7 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
 
             {/* Level */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Level *</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Level *</label>
               <select
                 value={form.level}
                 onChange={(e) => set('level', e.target.value)}
@@ -201,19 +208,25 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
 
             {/* Instructor */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Instructor Name *</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Instructor Name *</label>
               <input
                 type="text"
                 value={form.instructor}
                 onChange={(e) => set('instructor', e.target.value)}
+                disabled={!isEdit}
                 className={MODAL_INPUT_CLASS}
-                placeholder="Your name"
+                placeholder={instructorName || 'Your name'}
               />
+              {!isEdit && (
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Auto-filled from your profile.
+                </p>
+              )}
             </div>
 
             {/* Duration */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Duration *</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration *</label>
               <input
                 type="text"
                 value={form.duration}
@@ -226,7 +239,7 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
 
             {/* Price */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Course Price (NPR){' '}
                 <span className="text-xs text-slate-400 font-normal">(0 = free)</span>
               </label>
@@ -243,7 +256,7 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
 
             {/* Color theme picker */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Card Colour Theme</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Card Colour Theme</label>
               <div className="flex flex-wrap gap-2">
                 {COLORS.map((c) => (
                   <button
@@ -253,8 +266,8 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
                     className={[
                       'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all focus:outline-none',
                       form.color === c.value
-                        ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300',
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 shadow-sm'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:border-slate-600 dark:hover:border-slate-600',
                     ].join(' ')}
                   >
                     <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${c.value}`} />
@@ -279,10 +292,10 @@ const CourseModal = ({ initial, onClose, onSave, loading, error }) => {
         </div>
 
         {/* Modal footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-800">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
           >
             Cancel
           </button>
@@ -464,7 +477,7 @@ const TeacherDashboard = () => {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="h-screen bg-slate-50 flex flex-col">
+    <div className="h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors">
       <DashboardNav activePage={location.pathname} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -485,8 +498,8 @@ const TeacherDashboard = () => {
               <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-2xl p-6 sm:p-8 mb-8 text-white relative overflow-hidden">
                 {/* Decorative background circles */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
-                  <div className="absolute -top-16 -right-16 w-64 h-64 bg-white rounded-full" />
-                  <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white rounded-full" />
+                  <div className="absolute -top-16 -right-16 w-64 h-64 bg-white dark:bg-slate-900 rounded-full" />
+                  <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white dark:bg-slate-900 rounded-full" />
                 </div>
 
                 <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -510,7 +523,7 @@ const TeacherDashboard = () => {
 
                   <button
                     onClick={openCreateModal}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-orange-600 rounded-xl font-semibold hover:bg-orange-50 transition-all shadow-lg text-sm flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-orange-600 rounded-xl font-semibold hover:bg-orange-50 transition-all shadow-lg text-sm flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-white/50"
                   >
                     <FaPlus /><span>New Course</span>
                   </button>
@@ -521,8 +534,8 @@ const TeacherDashboard = () => {
             {/* ── My Courses page header ──────────────────────────────────── */}
             {isMyCourses && (
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-900">My Courses</h2>
-                <p className="text-slate-500 text-sm mt-1">Manage and create your courses</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">My Courses</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage and create your courses</p>
               </div>
             )}
 
@@ -538,8 +551,8 @@ const TeacherDashboard = () => {
 
             {/* ── Enrollment requests (dashboard only) ────────────────────── */}
             {!isMyCourses && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6 transition-colors">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
                   <FaUsers className="text-amber-500" />Enrollment Requests
                 </h3>
 
@@ -548,17 +561,17 @@ const TeacherDashboard = () => {
                     <FaSpinner className="text-2xl text-amber-500 animate-spin" />
                   </div>
                 ) : enrollments.length === 0 ? (
-                  <p className="text-sm text-slate-500">No enrollment requests yet.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No enrollment requests yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {enrollments.map((req) => (
                       <div
                         key={req.id}
-                        className="flex flex-wrap items-center gap-3 justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/80"
+                        className="flex flex-wrap items-center gap-3 justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/80"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{req.studentName}</p>
-                          <p className="text-xs text-slate-500 truncate">{req.courseTitle}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{req.studentName}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{req.courseTitle}</p>
                         </div>
 
                         <div className="flex items-center gap-2 text-xs">
@@ -569,9 +582,9 @@ const TeacherDashboard = () => {
                           <span
                             className={[
                               'px-2 py-0.5 rounded-full font-semibold capitalize',
-                              req.status === 'pending'  && 'bg-amber-100 text-amber-700',
-                              req.status === 'approved' && 'bg-green-100 text-green-700',
-                              req.status === 'rejected' && 'bg-red-100   text-red-700',
+                              req.status === 'pending'  && 'bg-amber-100 dark:bg-amber-900/30 text-amber-700',
+                              req.status === 'approved' && 'bg-green-100 dark:bg-green-900/30 text-green-700',
+                              req.status === 'rejected' && 'bg-red-100 dark:bg-red-900/30   text-red-700',
                             ].filter(Boolean).join(' ')}
                           >
                             {req.status}
@@ -602,9 +615,9 @@ const TeacherDashboard = () => {
             )}
 
             {/* ── My Courses list ─────────────────────────────────────────── */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <FaBook className="text-amber-500" />My Courses
                 </h3>
                 <button
@@ -626,8 +639,8 @@ const TeacherDashboard = () => {
               {!loading && courses.length === 0 && (
                 <div className="text-center py-16">
                   <FaGraduationCap className="text-6xl text-slate-200 mx-auto mb-4" />
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">No Courses Yet</h4>
-                  <p className="text-slate-500 text-sm mb-5">Create your first course and start teaching!</p>
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No Courses Yet</h4>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-5">Create your first course and start teaching!</p>
                   <button
                     onClick={openCreateModal}
                     className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -643,10 +656,10 @@ const TeacherDashboard = () => {
                   {courses.map((course) => (
                     <div
                       key={course.id}
-                      className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-amber-200 transition-all"
+                      className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-amber-200 dark:hover:border-amber-500 transition-all"
                     >
                       {/* Course swatch / thumbnail */}
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden bg-slate-100">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800">
                         {course.image ? (
                           <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
                         ) : (
@@ -659,7 +672,7 @@ const TeacherDashboard = () => {
                       {/* Course info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-slate-900 text-sm truncate">{course.title}</p>
+                          <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{course.title}</p>
 
                           {/* Level badge */}
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${LEVEL_COLORS[course.level] || LEVEL_COLORS.beginner}`}>
@@ -669,8 +682,8 @@ const TeacherDashboard = () => {
                           {/* Published / Draft badge */}
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                             course.isPublished
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-slate-100 text-slate-500'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                           }`}>
                             {course.isPublished ? 'Published' : 'Draft'}
                           </span>
@@ -686,7 +699,7 @@ const TeacherDashboard = () => {
                             {course.rating?.toFixed(1) || '0.0'} ({course.totalRatings || 0})
                           </span>
                           <span className="text-xs text-slate-400 capitalize">{course.category}</span>
-                          <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
                             {course.price && Number(course.price) > 0
                               ? `Paid · NPR ${Number(course.price).toLocaleString()}`
                               : 'Free'}
@@ -702,7 +715,7 @@ const TeacherDashboard = () => {
                           onClick={() => navigate(`/course/${course.id}`)}
                           title="View course"
                           aria-label={`View ${course.title}`}
-                          className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors focus:outline-none"
+                          className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors focus:outline-none"
                         >
                           <FaEye className="text-sm" />
                         </button>
@@ -724,8 +737,8 @@ const TeacherDashboard = () => {
                           aria-label={course.isPublished ? `Unpublish ${course.title}` : `Publish ${course.title}`}
                           className={`p-2 rounded-lg transition-colors focus:outline-none ${
                             course.isPublished
-                              ? 'text-green-500 hover:bg-green-50'
-                              : 'text-slate-400 hover:bg-slate-100'
+                              ? 'text-green-500 hover:bg-green-50 dark:bg-green-900/20'
+                              : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800'
                           }`}
                         >
                           {course.isPublished
@@ -755,7 +768,7 @@ const TeacherDashboard = () => {
                             </button>
                             <button
                               onClick={() => setDeletingId(null)}
-                              className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-medium transition-colors focus:outline-none"
+                              className="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-xs font-medium transition-colors focus:outline-none"
                             >
                               Cancel
                             </button>
@@ -765,7 +778,7 @@ const TeacherDashboard = () => {
                             onClick={() => setDeletingId(course.id)}
                             title="Delete course"
                             aria-label={`Delete ${course.title}`}
-                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none"
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:bg-red-900/20 rounded-lg transition-colors focus:outline-none"
                           >
                             <FaTrash className="text-sm" />
                           </button>
@@ -779,25 +792,25 @@ const TeacherDashboard = () => {
 
             {/* ── Teacher bio card (shown when experienceDescription is set) ─ */}
             {user?.experienceDescription && (
-              <div className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <div className="mt-6 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                   <FaChalkboardTeacher className="text-amber-500" />About Me
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-4 mb-3">
                   {user.degree && (
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <FaGraduationCap className="text-amber-500 flex-shrink-0" />
                       <span>{user.degree}</span>
                     </div>
                   )}
                   {user.yearsOfTeaching != null && (
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <FaBriefcase className="text-amber-500 flex-shrink-0" />
                       <span>{user.yearsOfTeaching} year{user.yearsOfTeaching !== 1 ? 's' : ''} of teaching</span>
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">{user.experienceDescription}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{user.experienceDescription}</p>
               </div>
             )}
 
@@ -808,7 +821,8 @@ const TeacherDashboard = () => {
       {/* Create modal */}
       {showModal && (
         <CourseModal
-          initial={null}
+          initial={{ ...EMPTY_FORM, instructor: user?.name || '' }}
+          instructorName={user?.name || ''}
           onClose={() => {
             setShowModal(false);
             if (location.pathname === '/teacher/create-course') navigate('/teacher/courses');
@@ -823,6 +837,7 @@ const TeacherDashboard = () => {
       {editingCourse && (
         <CourseModal
           initial={editingCourse}
+          instructorName={user?.name || ''}
           onClose={() => setEditingCourse(null)}
           onSave={handleUpdate}
           loading={modalLoading}

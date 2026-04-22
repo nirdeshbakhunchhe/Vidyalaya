@@ -13,6 +13,8 @@ import paymentRoutes from './routes/payment.route.js';
 import assignmentsRoutes from './routes/assignments.route.js';
 import progressRoutes from './routes/progress.routes.js';
 import notificationRoutes from './routes/notifications.route.js';
+import analyticsRoutes from './routes/analytics.route.js';
+import leaderboardRoutes from './routes/leaderboard.route.js';
 
 connectDB();
 
@@ -38,6 +40,8 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/assignments', assignmentsRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 app.use(errorHandler);
 

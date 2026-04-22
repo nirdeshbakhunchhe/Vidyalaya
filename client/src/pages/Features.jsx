@@ -87,7 +87,7 @@ const Features = () => {
       title: 'Secure Admin Dashboard',
       description: 'Administrators can manage uploads, verify content quality, moderate users, and ensure platform integrity through a comprehensive dashboard.',
       color: 'from-slate-500 to-gray-500',
-      iconColor: 'text-slate-600',
+      iconColor: 'text-slate-600 dark:text-slate-300',
       bgColor: 'bg-slate-50 dark:bg-slate-900/20'
     },
     {
@@ -278,13 +278,13 @@ const Features = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-primary-600 bg-white hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-primary-600 bg-white dark:bg-slate-900 hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all"
               >
                 Get Started Free
               </Link>
               <Link
                 to="/explore-courses"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-white border-2 border-white hover:bg-white/10 transition-all"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-white border-2 border-white hover:bg-white dark:bg-slate-900/10 transition-all"
               >
                 Explore Courses
               </Link>

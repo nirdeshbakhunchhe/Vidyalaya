@@ -3,6 +3,14 @@ import Progress from '../models/progressModel.js';
 import Course from '../models/courseModel.js';
 import User from '../models/User.js';
 
+/** Prefer video count (actual playable lessons); otherwise curriculum lesson rows. */
+const totalPlayableLessons = (course) => {
+  const vLen = course?.videos?.length ?? 0;
+  if (vLen > 0) return vLen;
+  if (!Array.isArray(course?.curriculum)) return 0;
+  return course.curriculum.reduce((acc, sec) => acc + (sec.lessons?.length ?? 0), 0);
+};
+
 // @desc    Get progress for all enrolled courses
 // @route   GET /api/progress
 // @access  Private (Student)
@@ -13,9 +21,11 @@ export const getAllProgress = asyncHandler(async (req, res) => {
     const pObj = p.toObject();
     const course = pObj.course;
     if (course) {
-      const totalLessons = course.videos && course.videos.length > 0 ? course.videos.length : 
-                           course.curriculum ? course.curriculum.reduce((acc, sec) => acc + (sec.lessons ? sec.lessons.length : 0), 0) : 1;
-      let percentage = Math.round(((pObj.completedLessons?.length || 0) / (totalLessons || 1)) * 100);
+      const totalLessons = totalPlayableLessons(course);
+      let percentage =
+        totalLessons > 0
+          ? Math.round(((pObj.completedLessons?.length || 0) / totalLessons) * 100)
+          : 0;
       if (percentage > 100) percentage = 100;
       
       pObj.completionPercentage = percentage;
@@ -49,9 +59,11 @@ export const getCourseProgress = asyncHandler(async (req, res) => {
   const pObj = progress.toObject();
   const course = pObj.course;
   if (course) {
-    const totalLessons = course.videos && course.videos.length > 0 ? course.videos.length : 
-                         course.curriculum ? course.curriculum.reduce((acc, sec) => acc + (sec.lessons ? sec.lessons.length : 0), 0) : 1;
-    let percentage = Math.round(((pObj.completedLessons?.length || 0) / (totalLessons || 1)) * 100);
+    const totalLessons = totalPlayableLessons(course);
+    let percentage =
+      totalLessons > 0
+        ? Math.round(((pObj.completedLessons?.length || 0) / totalLessons) * 100)
+        : 0;
     if (percentage > 100) percentage = 100;
     
     pObj.completionPercentage = percentage;
@@ -78,9 +90,7 @@ export const markLessonComplete = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Course not found' });
   }
 
-  // Find total lessons in course (assuming videos array holds the actual playable content)
-  const totalLessons = course.videos && course.videos.length > 0 ? course.videos.length : 
-                       course.curriculum ? course.curriculum.reduce((acc, sec) => acc + sec.lessons.length, 0) : 1;
+  const totalLessons = totalPlayableLessons(course);
 
   let progress = await Progress.findOne({
     user: req.user._id,
@@ -104,7 +114,8 @@ export const markLessonComplete = asyncHandler(async (req, res) => {
     progress.lastAccessed = new Date();
     
     // Calculate new percentage
-    let percentage = Math.round((progress.completedLessons.length / totalLessons) * 100);
+    let percentage =
+      totalLessons > 0 ? Math.round((progress.completedLessons.length / totalLessons) * 100) : 0;
     if (percentage > 100) percentage = 100;
     
     progress.completionPercentage = percentage;
@@ -131,14 +142,26 @@ export const markLessonComplete = asyncHandler(async (req, res) => {
 // @route   POST /api/progress/:courseId/time
 // @access  Private
 export const addWatchTime = asyncHandler(async (req, res) => {
-  const { timeSpent } = req.body;
-  
-  if (!timeSpent || typeof timeSpent !== 'number') {
-    return res.status(400).json({ success: false, message: 'timeSpent (number in seconds) is required' });
+  const rawTimeSpent = req.body?.timeSpent;
+  const timeSpent = Number(rawTimeSpent);
+
+  if (!Number.isFinite(timeSpent) || timeSpent <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'timeSpent (number in seconds) must be a positive number',
+    });
   }
 
   const courseId = req.params.courseId;
   const userId = req.user._id;
+  const debug = process.env.WATCHTIME_DEBUG === 'true';
+  if (debug) {
+    console.log('[watchtime] incoming', {
+      userId: String(userId),
+      courseId: String(courseId),
+      timeSpent,
+    });
+  }
 
   let progress = await Progress.findOne({ user: userId, course: courseId });
   if (!progress) {
@@ -149,6 +172,10 @@ export const addWatchTime = asyncHandler(async (req, res) => {
       completionPercentage: 0,
       isCompleted: false,
     });
+  }
+
+  if (!Array.isArray(progress.watchTimeLogs)) {
+    progress.watchTimeLogs = [];
   }
 
   // Get current date string (YYYY-MM-DD) based on local time
@@ -165,6 +192,17 @@ export const addWatchTime = asyncHandler(async (req, res) => {
 
   progress.lastAccessed = new Date();
   await progress.save();
+
+  if (debug) {
+    const todayLog = (progress.watchTimeLogs || []).find((l) => l.date === today);
+    console.log('[watchtime] saved', {
+      userId: String(userId),
+      courseId: String(courseId),
+      today,
+      todaySeconds: Number(todayLog?.timeSpent) || 0,
+      totalDays: Array.isArray(progress.watchTimeLogs) ? progress.watchTimeLogs.length : 0,
+    });
+  }
 
   res.json({ success: true, progress });
 });

@@ -61,17 +61,21 @@ const OtpVerification = () => {
     setLoading(true);
     try {
       if (context === 'signup') {
-        await verifyOtpAndLogin(email, otp);
-        setSuccess('Email verified successfully!');
-        navigate('/dashboard', { replace: true });
-      } else if (context === 'forgotPassword' && location.state?.pendingNewPassword) {
-        await authAPI.resetPasswordWithOtp(
-          email,
-          otp,
-          location.state.pendingNewPassword
-        );
-        setSuccess('Password reset successfully. You can now log in.');
-        navigate('/login', { replace: true });
+        const result = await verifyOtpAndLogin(email, otp);
+        if (result?.pendingApproval) {
+          setSuccess('Email verified! Your teacher account is pending admin approval. You will be redirected to login shortly.');
+          setTimeout(() => navigate('/login', { replace: true }), 4000);
+        } else {
+          setSuccess('Email verified successfully!');
+          navigate('/dashboard', { replace: true });
+        }
+      } else if (context === 'forgotPassword') {
+        await authAPI.verifyResetOtp(email, otp);
+        setSuccess('OTP verified successfully!');
+        navigate('/reset-password', {
+          state: { email, otp },
+          replace: true,
+        });
       } else {
         setError('Invalid verification context.');
       }
@@ -121,13 +125,13 @@ const OtpVerification = () => {
       : `We’ve sent a 6‑digit reset code to ${email}.`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-1">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
               {heading}
             </h2>
             <p className="text-sm text-slate-500 mb-6">
@@ -135,12 +139,12 @@ const OtpVerification = () => {
             </p>
 
             {error && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
+              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-sm text-red-600">
                 {error}
               </div>
             )}
             {success && (
-              <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-sm text-green-700">
+              <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 text-sm text-green-700">
                 {success}
               </div>
             )}
@@ -158,7 +162,7 @@ const OtpVerification = () => {
                   onChange={(e) =>
                     setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
                   }
-                  className="w-full text-center tracking-[0.5em] text-lg font-semibold px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-900"
+                  className="w-full text-center tracking-[0.5em] text-lg font-semibold px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   placeholder="••••••"
                   required
                 />

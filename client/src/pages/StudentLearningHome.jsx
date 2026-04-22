@@ -98,10 +98,10 @@ const StudentLearningHome = () => {
     return (
       <StudentShell>
         <div className="flex items-center justify-center py-20 px-4">
-          <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 shadow-sm text-center">
             <FaBookOpen className="text-5xl text-slate-200 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-900 mb-2">No enrolled courses</h2>
-            <p className="text-sm text-slate-500 mb-6">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No enrolled courses</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
               Enroll in a course first to start learning.
             </p>
             <button
@@ -124,11 +124,11 @@ const StudentLearningHome = () => {
 
         {/* ── Continue Watching card ─────────────────────────────────────────── */}
         {lastWatched && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             {/* Header */}
             <div className="px-6 pt-5 pb-3 flex items-center gap-2">
               <FaHistory className="text-blue-500 text-sm" />
-              <h2 className="text-base font-bold text-slate-900">Continue Watching</h2>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Continue Watching</h2>
               <span className="ml-auto text-xs text-slate-400">
                 {timeAgo(lastWatched.watchedAt)}
               </span>
@@ -141,7 +141,7 @@ const StudentLearningHome = () => {
               className="w-full flex items-center gap-4 px-6 pb-5 text-left group focus:outline-none"
             >
               {/* Thumbnail / fallback */}
-              <div className="relative w-28 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+              <div className="relative w-28 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800">
                 {lastWatched.thumbnail ? (
                   <img
                     src={lastWatched.thumbnail}
@@ -155,7 +155,7 @@ const StudentLearningHome = () => {
                 )}
                 {/* Play overlay */}
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center">
                     <FaPlay className="text-blue-600 text-xs ml-0.5" />
                   </div>
                 </div>
@@ -163,10 +163,10 @@ const StudentLearningHome = () => {
 
               {/* Text info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 transition-colors">
                   {lastWatched.videoTitle}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5 truncate">{lastWatched.courseTitle}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{lastWatched.courseTitle}</p>
                 {lastWatched.instructor && (
                   <p className="text-xs text-slate-400 truncate">by {lastWatched.instructor}</p>
                 )}
@@ -181,10 +181,10 @@ const StudentLearningHome = () => {
         )}
 
         {/* ── All enrolled courses ───────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
           <div className="flex items-center gap-2 mb-5">
             <FaBookOpen className="text-blue-500 text-sm" />
-            <h2 className="text-base font-bold text-slate-900">My Courses</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">My Courses</h2>
             <span className="ml-auto text-xs text-slate-400">{enrolledCourses.length} enrolled</span>
           </div>
 
@@ -199,8 +199,8 @@ const StudentLearningHome = () => {
                   className={[
                     'w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400',
                     isLastWatched
-                      ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100'
-                      : 'bg-slate-50 border border-transparent hover:bg-slate-100',
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 hover:bg-blue-100'
+                      : 'bg-slate-50 dark:bg-slate-900 border border-transparent hover:bg-slate-100 dark:hover:bg-slate-800',
                   ].join(' ')}
                 >
                   {/* Course thumbnail / colour swatch */}
@@ -216,10 +216,10 @@ const StudentLearningHome = () => {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 transition-colors">
                       {course.title}
                     </p>
-                    <p className="text-xs text-slate-500 truncate">{course.instructor}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{course.instructor}</p>
                     {isLastWatched && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <FaClock className="text-blue-400 text-[10px]" />
@@ -232,10 +232,10 @@ const StudentLearningHome = () => {
 
                   {/* Play icon */}
                   <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                    isLastWatched ? 'bg-blue-600' : 'bg-slate-200 group-hover:bg-blue-600'
+                    isLastWatched ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700 group-hover:bg-blue-600'
                   }`}>
                     <FaPlay className={`text-xs ml-0.5 transition-colors ${
-                      isLastWatched ? 'text-white' : 'text-slate-500 group-hover:text-white'
+                      isLastWatched ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-white'
                     }`} />
                   </div>
                 </button>

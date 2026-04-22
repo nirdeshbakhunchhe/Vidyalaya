@@ -62,8 +62,11 @@ export const NotificationProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     const socket = io(SOCKET_URL, {
       auth: { token },
-      reconnectionAttempts: 5,
-      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+      transports: ['websocket'],
     });
 
     socketRef.current = socket;
@@ -76,7 +79,7 @@ export const NotificationProvider = ({ children }) => {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [isAuthenticated, user, fetchNotifications]);
+  }, [isAuthenticated, user?._id, fetchNotifications]);
 
   return (
     <NotificationContext.Provider

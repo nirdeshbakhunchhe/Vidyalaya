@@ -37,7 +37,7 @@ const Footer = () => {
               <img 
                 src={logo} 
                 alt="Vidyalaya" 
-                className="h-10 w-10 rounded-lg object-contain bg-white transition-transform group-hover:scale-105" 
+                className="h-10 w-10 rounded-lg object-contain bg-white dark:bg-slate-900 transition-transform group-hover:scale-105" 
               />
               <span className="text-xl font-bold text-slate-900 dark:text-white">
                 Vidyalaya

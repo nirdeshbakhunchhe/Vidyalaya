@@ -66,7 +66,7 @@ const DashboardNav = ({ activePage }) => {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
 
@@ -94,7 +94,7 @@ const DashboardNav = ({ activePage }) => {
                       'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                       active
                         ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-blue-600 hover:bg-slate-100',
+                        : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800',
                     ].join(' ')}
                   >
                     <Icon className="text-sm" />
@@ -115,7 +115,7 @@ const DashboardNav = ({ activePage }) => {
             <button
                 onClick={toggleTheme}
                 aria-label="Toggle Theme"
-                className="hidden sm:block p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                className="hidden sm:block p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
               >
                 {user?.themePreference === 'dark' ? <FaSun size={18} /> : <FaMoon size={18} />}
             </button>
@@ -136,7 +136,7 @@ const DashboardNav = ({ activePage }) => {
             {/* Logout — hidden on xs so mobile menu handles it */}
             <button
               onClick={handleLogout}
-              className="hidden sm:flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/20 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300"
             >
               <FaSignOutAlt className="text-sm" />
               <span>Logout</span>
@@ -147,7 +147,7 @@ const DashboardNav = ({ activePage }) => {
               onClick={() => setMobileOpen((o) => !o)}
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
-              className="md:hidden p-2 text-slate-500 rounded-lg hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors"
+              className="md:hidden p-2 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors"
             >
               {mobileOpen ? <FaTimes /> : <FaBars />}
             </button>
@@ -156,7 +156,7 @@ const DashboardNav = ({ activePage }) => {
 
         {/* Mobile dropdown menu — slides in when mobileOpen is true */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 pt-2 space-y-1 border-t border-slate-100">
+          <div className="md:hidden pb-4 pt-2 space-y-1 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4">
             {navLinks.map((link) => {
               const Icon   = link.icon;
               const active = isLinkActive(link);
@@ -169,7 +169,7 @@ const DashboardNav = ({ activePage }) => {
                     'w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
                     active
                       ? 'bg-blue-600 text-white'
-                      : 'text-slate-600 hover:bg-slate-100',
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800',
                   ].join(' ')}
                 >
                   <Icon className="text-sm" />
@@ -181,7 +181,7 @@ const DashboardNav = ({ activePage }) => {
             {/* Theme Toggle in mobile menu */}
             <button
                onClick={() => { toggleTheme(); setMobileOpen(false); }}
-               className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+               className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 transition-colors"
             >
               {user?.themePreference === 'dark' ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
               <span>{user?.themePreference === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
@@ -190,7 +190,7 @@ const DashboardNav = ({ activePage }) => {
             {/* Logout in mobile menu — shown only here on xs screens */}
             <button
               onClick={handleLogout}
-              className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+              className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/20 transition-colors"
             >
               <FaSignOutAlt className="text-sm" />
               <span>Logout</span>

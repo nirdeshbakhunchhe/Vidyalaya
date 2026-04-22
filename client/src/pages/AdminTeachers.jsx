@@ -6,7 +6,9 @@ import AdminFormModal from '../components/AdminFormModal';
 import { adminAPI } from '../services/api';
 
 const AdminTeachers = () => {
+  const [activeTab, setActiveTab] = useState('approved');
   const [teachers, setTeachers] = useState([]);
+  const [pendingTeachers, setPendingTeachers] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
   const [confirmingDelete, setConfirmingDelete] = useState(null);
@@ -18,17 +20,21 @@ const AdminTeachers = () => {
       try {
         setLoading(true);
         const list = await adminAPI.getUsers({ role: 'teacher' });
-        // Map API users into local teacher row shape
-        setTeachers(
-          list.map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            subject: u.degree || 'N/A',
-            yearsOfExperience: u.yearsOfTeaching ?? 0,
-            status: u.status || 'active',
-          })),
-        );
+        const approved = list.filter((u) => u.isApproved !== false);
+        const pending = list.filter((u) => u.isApproved === false);
+
+        const mapUser = (u) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          subject: u.degree || 'N/A',
+          yearsOfExperience: u.yearsOfTeaching ?? 0,
+          status: u.status || 'active',
+          qualificationDoc: u.qualificationDoc,
+        });
+
+        setTeachers(approved.map(mapUser));
+        setPendingTeachers(pending.map(mapUser));
       } catch (err) {
         console.error('Failed to load teachers', err);
         setError(
@@ -161,6 +167,32 @@ const AdminTeachers = () => {
     }
   };
 
+  const handleApproveTeacher = async (teacherId) => {
+    try {
+      setError('');
+      await adminAPI.approveTeacher(teacherId);
+      const approvedTeacher = pendingTeachers.find((t) => t.id === teacherId);
+      setPendingTeachers((prev) => prev.filter((t) => t.id !== teacherId));
+      setTeachers((prev) => [{ ...approvedTeacher, status: 'active' }, ...prev]);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || 'Failed to approve teacher'
+      );
+    }
+  };
+
+  const handleRejectTeacher = async (teacherId) => {
+    try {
+      setError('');
+      await adminAPI.rejectTeacher(teacherId);
+      setPendingTeachers((prev) => prev.filter((t) => t.id !== teacherId));
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || 'Failed to reject teacher'
+      );
+    }
+  };
+
   const columns = [
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
@@ -178,13 +210,35 @@ const AdminTeachers = () => {
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
             value === 'active'
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+              : 'bg-slate-100 text-slate-600 dark:text-slate-300 dark:bg-slate-800 dark:text-slate-300'
           }`}
         >
           {value === 'active' ? 'Active' : 'Inactive'}
         </span>
       ),
     },
+  ];
+
+  const pendingColumns = [
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'subject', label: 'Subject' },
+    {
+      key: 'yearsOfExperience',
+      label: 'Experience',
+      render: (value) => `${value} yr${value === 1 ? '' : 's'}`,
+    },
+    {
+      key: 'qualificationDoc',
+      label: 'Document',
+      render: (value) => value ? (
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline dark:text-blue-400">
+          View Doc
+        </a>
+      ) : (
+        <span className="text-slate-400 text-xs italic">N/A</span>
+      )
+    }
   ];
 
   return (
@@ -207,16 +261,44 @@ const AdminTeachers = () => {
         </div>
 
         {error && (
-          <div className="px-4 py-2 rounded-lg bg-red-50 text-red-700 text-sm border border-red-100">
+          <div className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 text-sm border border-red-100">
             {error}
           </div>
         )}
+
+        <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700">
+          <button
+            onClick={() => setActiveTab('approved')}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
+              activeTab === 'approved'
+                ? 'border-primary-600 text-primary-600 dark:border-primary-500 dark:text-primary-400'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+            }`}
+          >
+            Approved Teachers
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`pb-3 text-sm font-semibold border-b-2 flex items-center gap-2 transition-colors ${
+              activeTab === 'pending'
+                ? 'border-primary-600 text-primary-600 dark:border-primary-500 dark:text-primary-400'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+            }`}
+          >
+            Pending Approvals
+            {pendingTeachers.length > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-xs">
+                {pendingTeachers.length}
+              </span>
+            )}
+          </button>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
           </div>
-        ) : (
+        ) : activeTab === 'approved' ? (
         <AdminTable
           columns={columns}
           data={teachers}
@@ -226,19 +308,42 @@ const AdminTeachers = () => {
             <div className="inline-flex items-center gap-1">
               <button
                 onClick={() => handleEditClick(row)}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
               >
                 <FaEdit className="text-xs" />
               </button>
               <button
                 onClick={() => setConfirmingDelete(row)}
-                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
+                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/30"
               >
                 <FaTrash className="text-xs" />
               </button>
             </div>
           )}
         />
+        ) : (
+          <AdminTable
+            columns={pendingColumns}
+            data={pendingTeachers}
+            searchPlaceholder="Search pending teachers..."
+            searchKeys={['name', 'email', 'subject']}
+            renderActions={(row) => (
+              <div className="inline-flex items-center gap-2">
+                <button
+                  onClick={() => handleApproveTeacher(row.id)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors border border-green-200 dark:border-green-800/30"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleRejectTeacher(row.id)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800/30"
+                >
+                  Reject
+                </button>
+              </div>
+            )}
+          />
         )}
       </div>
 
@@ -279,7 +384,7 @@ const AdminTeachers = () => {
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setConfirmingDelete(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>

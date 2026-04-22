@@ -27,9 +27,9 @@ import {
 // Consistent with StudentPaymentHistory's STATUS_META.
 // ─────────────────────────────────────────────────────────────────────────────
 const STATUS_META = {
-  completed: { label: 'Completed', icon: FaCheckCircle, pill: 'bg-green-100 text-green-700' },
-  pending:   { label: 'Pending',   icon: FaClock,       pill: 'bg-amber-100 text-amber-700' },
-  failed:    { label: 'Failed',    icon: FaTimesCircle, pill: 'bg-red-100   text-red-700'   },
+  completed: { label: 'Completed', icon: FaCheckCircle, pill: 'bg-green-100 dark:bg-green-900/30 text-green-700' },
+  pending:   { label: 'Pending',   icon: FaClock,       pill: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700' },
+  failed:    { label: 'Failed',    icon: FaTimesCircle, pill: 'bg-red-100 dark:bg-red-900/30   text-red-700'   },
 };
 
 // =============================================================================
@@ -84,7 +84,7 @@ const TeacherPaymentHistory = () => {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="h-screen bg-slate-50 flex flex-col">
+    <div className="h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
       <DashboardNav activePage="/teacher/payments" />
 
       <div className="flex flex-1 overflow-hidden">
@@ -92,12 +92,12 @@ const TeacherPaymentHistory = () => {
 
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
 
               {/* Section header */}
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-slate-900">Payment History</h2>
-                <p className="text-sm text-slate-500 mt-1">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Payment History</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                   Payments received for your courses via Khalti.
                 </p>
               </div>
@@ -113,7 +113,7 @@ const TeacherPaymentHistory = () => {
               {!loading && error && (
                 <div
                   role="alert"
-                  className="flex items-center gap-2 p-4 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm"
+                  className="flex items-center gap-2 p-4 rounded-xl border border-red-200 dark:border-red-800/30 bg-red-50 dark:bg-red-900/20 text-red-700 text-sm"
                 >
                   <FaExclamationCircle className="flex-shrink-0" />
                   <span>{error}</span>
@@ -124,7 +124,7 @@ const TeacherPaymentHistory = () => {
               {!loading && !error && payments.length === 0 && (
                 <div className="text-center py-12">
                   <FaReceipt className="text-4xl text-slate-200 mx-auto mb-3" />
-                  <p className="text-sm text-slate-500">No payments found yet.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No payments found yet.</p>
                 </div>
               )}
 
@@ -140,14 +140,14 @@ const TeacherPaymentHistory = () => {
                     return (
                       <div
                         key={p._id}
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-slate-200 transition-colors"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50 dark:bg-slate-900 hover:border-slate-200 dark:border-slate-700 transition-colors"
                       >
                         {/* Course + student info */}
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                             {p.course?.title || 'Course'}
                           </p>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                             {/* Student name with icon */}
                             <span className="inline-flex items-center gap-1">
                               <FaUserGraduate className="text-amber-500" />
@@ -174,7 +174,7 @@ const TeacherPaymentHistory = () => {
                           {/* View course */}
                           <button
                             onClick={() => p.course?._id && navigate(`/course/${p.course._id}`)}
-                            className="px-3 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                            className="px-3 py-2 rounded-lg text-sm font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 transition-colors inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-slate-300"
                           >
                             View
                           </button>

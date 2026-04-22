@@ -115,12 +115,12 @@ const PaymentVerify = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-16 px-4 flex items-center justify-center">
       <div className="w-full max-w-lg">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
 
           {/* Status header */}
           <div className={`bg-gradient-to-r ${headerGradient} p-6 text-white text-center`}>
             <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center shadow-md mb-4 ${
-              status === 'verifying' ? 'bg-white/20' : 'bg-white'
+              status === 'verifying' ? 'bg-white dark:bg-slate-900/20' : 'bg-white dark:bg-slate-900'
             }`}>
               {status === 'verifying' && <FaSpinner className="text-white text-3xl animate-spin" />}
               {status === 'success'   && <FaCheckCircle className="text-blue-600 text-4xl" />}
@@ -145,7 +145,7 @@ const PaymentVerify = () => {
               <div className="text-center space-y-6">
                 {/* Progress track — uses slate-100 consistent with the rest of the app */}
                 <div
-                  className="w-full bg-slate-100 rounded-full h-2"
+                  className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2"
                   role="progressbar"
                   aria-valuenow={progress}
                   aria-valuemin={0}
@@ -164,8 +164,8 @@ const PaymentVerify = () => {
                     { icon: FaShieldAlt,   label: 'Verifying',  muted: false },
                     { icon: FaArrowRight,  label: 'Enrolling',  muted: true  },
                   ].map(({ icon: Icon, label, muted }) => (
-                    <div key={label} className={`rounded-lg p-3 text-center ${muted ? 'bg-slate-50' : 'bg-blue-50'}`}>
-                      <div className={`mx-auto w-9 h-9 rounded-full flex items-center justify-center mb-1 ${muted ? 'bg-slate-100' : 'bg-blue-100'}`}>
+                    <div key={label} className={`rounded-lg p-3 text-center ${muted ? 'bg-slate-50 dark:bg-slate-900' : 'bg-blue-50'}`}>
+                      <div className={`mx-auto w-9 h-9 rounded-full flex items-center justify-center mb-1 ${muted ? 'bg-slate-100 dark:bg-slate-800' : 'bg-blue-100'}`}>
                         <Icon className={muted ? 'text-slate-400' : 'text-blue-600'} />
                       </div>
                       <p className={`text-xs font-medium ${muted ? 'text-slate-400' : 'text-blue-600'}`}>
@@ -175,7 +175,7 @@ const PaymentVerify = () => {
                   ))}
                 </div>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   This usually takes less than a minute. Do not press back or refresh.
                 </p>
               </div>
@@ -185,26 +185,26 @@ const PaymentVerify = () => {
             {status === 'success' && (
               <div className="space-y-5">
                 {paymentDetails && (
-                  <div className="bg-blue-50 rounded-xl border border-blue-100 p-4 space-y-2 text-sm">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 p-4 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Amount Paid</span>
+                      <span className="text-slate-500 dark:text-slate-400">Amount Paid</span>
                       <span className="font-bold text-blue-700">
                         NPR {Number(paymentDetails.amount).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Transaction ID</span>
-                      <span className="font-medium text-slate-700 text-right break-all ml-4">
+                      <span className="text-slate-500 dark:text-slate-400">Transaction ID</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300 text-right break-all ml-4">
                         {paymentDetails.transactionId}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Method</span>
-                      <span className="font-medium text-slate-700">{paymentDetails.method}</span>
+                      <span className="text-slate-500 dark:text-slate-400">Method</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">{paymentDetails.method}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Date</span>
-                      <span className="font-medium text-slate-700">
+                      <span className="text-slate-500 dark:text-slate-400">Date</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
                         {paymentDetails.paidAt?.toLocaleDateString('en-US', {
                           year: 'numeric', month: 'long', day: 'numeric',
                         })}
@@ -214,7 +214,7 @@ const PaymentVerify = () => {
                 )}
 
                 <div className="text-center">
-                  <span className="inline-block rounded-full bg-blue-100 text-blue-800 px-4 py-1 text-xs animate-pulse">
+                  <span className="inline-block rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 px-4 py-1 text-xs animate-pulse">
                     Redirecting to My Courses in 3 seconds…
                   </span>
                 </div>
@@ -234,12 +234,12 @@ const PaymentVerify = () => {
                 role="alert"
                 className="space-y-5"
               >
-                <div className="bg-red-50 border-l-4 border-red-500 rounded-r-xl p-4 text-sm text-red-700">
+                <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-r-xl p-4 text-sm text-red-700">
                   {errorMsg}
                 </div>
 
-                <div className="bg-slate-50 rounded-xl p-4 text-sm text-slate-600">
-                  <p className="font-medium text-slate-700 mb-2">What you can do:</p>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 text-sm text-slate-600 dark:text-slate-300">
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mb-2">What you can do:</p>
                   <ul className="space-y-1 list-disc list-inside text-xs">
                     <li>Go back to the course and click "Pay Now" again</li>
                     <li>Check your Khalti wallet to see if money was deducted</li>
@@ -256,7 +256,7 @@ const PaymentVerify = () => {
                   </button>
                   <button
                     onClick={() => navigate('/')}
-                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold border border-slate-200 flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+                    className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
                   >
                     <FaHome /><span>Home</span>
                   </button>

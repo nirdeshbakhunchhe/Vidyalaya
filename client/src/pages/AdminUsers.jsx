@@ -160,7 +160,7 @@ const AdminUsers = () => {
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
             value === 'active'
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+              : 'bg-slate-100 text-slate-600 dark:text-slate-300 dark:bg-slate-800 dark:text-slate-300'
           }`}
         >
           {value === 'active' ? 'Active' : 'Inactive'}
@@ -189,7 +189,7 @@ const AdminUsers = () => {
         </div>
 
         {error && (
-          <div className="px-4 py-2 rounded-lg bg-red-50 text-red-700 text-sm border border-red-100">
+          <div className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 text-sm border border-red-100">
             {error}
           </div>
         )}
@@ -208,13 +208,13 @@ const AdminUsers = () => {
             <div className="inline-flex items-center gap-1">
               <button
                 onClick={() => handleEditClick(row)}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-primary-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary-600 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
               >
                 <FaEdit className="text-xs" />
               </button>
               <button
                 onClick={() => setConfirmingDelete(row)}
-                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
+                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/30"
               >
                 <FaTrash className="text-xs" />
               </button>
@@ -260,7 +260,7 @@ const AdminUsers = () => {
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setConfirmingDelete(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>

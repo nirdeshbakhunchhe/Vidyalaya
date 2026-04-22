@@ -37,7 +37,6 @@ import {
 const SECTIONS = [
   { id: 'profile',       label: 'Profile Info',    icon: FaUser      },
   { id: 'password',      label: 'Password',        icon: FaLock      },
-  { id: 'notifications', label: 'Notifications',   icon: FaBell      },
   { id: 'account',       label: 'Account',         icon: FaShieldAlt },
 ];
 
@@ -54,9 +53,9 @@ const NOTIF_ITEMS = [
 // focus:ring-blue-500 replaces the former primary-500 token.
 // ─────────────────────────────────────────────────────────────────────────────
 const INPUT_CLASS =
-  'w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm ' +
-  'bg-white text-slate-900 placeholder-slate-400 outline-none transition-all ' +
-  'focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300';
+  'w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm ' +
+  'bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all ' +
+  'focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300 dark:border-slate-600';
 
 // =============================================================================
 // Sub-components
@@ -69,7 +68,7 @@ const StatusBanner = ({ success, error }) => (
     {success && (
       <div
         role="status"
-        className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2"
+        className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded-xl text-green-700 text-sm flex items-center gap-2"
       >
         <FaCheckCircle className="flex-shrink-0" /><span>{success}</span>
       </div>
@@ -77,7 +76,7 @@ const StatusBanner = ({ success, error }) => (
     {error && (
       <div
         role="alert"
-        className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2"
+        className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl text-red-700 text-sm flex items-center gap-2"
       >
         <FaExclamationCircle className="flex-shrink-0" /><span>{error}</span>
       </div>
@@ -154,6 +153,9 @@ const ProfilePage = () => {
   // ── Delete account confirmation state ──────────────────────────────────────
   // Using in-component state instead of window.alert() for consistent UX
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   // ── Handlers (logic unchanged) ──────────────────────────────────────────────
 
@@ -209,8 +211,8 @@ const ProfilePage = () => {
 
         {/* Page heading */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-1">My Profile</h2>
-          <p className="text-slate-500 text-sm">Manage your account settings and preferences</p>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">My Profile</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Manage your account settings and preferences</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -219,17 +221,22 @@ const ProfilePage = () => {
           <div className="lg:col-span-1 space-y-4">
 
             {/* Avatar + identity card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 text-center">
               <CloudinaryAvatarUpload user={user} onUserUpdated={updateUser} />
-              <h3 className="font-bold text-slate-900 mt-2">{user?.name}</h3>
-              <p className="text-sm text-slate-500">{user?.email}</p>
+              <h3 className="font-bold text-slate-900 dark:text-white mt-2">{user?.name}</h3>
+              <p
+                className="text-sm text-slate-500 dark:text-slate-400 break-words overflow-hidden"
+                title={user?.email}
+              >
+                {user?.email}
+              </p>
 
               {/* Role badge */}
               <span
                 className={`inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                   isTeacher
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-blue-100 text-blue-700'
+                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700'
+                    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700'
                 }`}
               >
                 {isTeacher
@@ -248,7 +255,7 @@ const ProfilePage = () => {
             </div>
 
             {/* Section navigation */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-2">
               {SECTIONS.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
@@ -257,8 +264,8 @@ const ProfilePage = () => {
                   className={[
                     'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left',
                     activeSection === id
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-600 hover:bg-slate-50',
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900',
                   ].join(' ')}
                 >
                   <Icon className="text-sm flex-shrink-0" />
@@ -273,8 +280,8 @@ const ProfilePage = () => {
 
             {/* ══ Profile Info ════════════════════════════════════════════════ */}
             {activeSection === 'profile' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
                   <FaUser className="text-blue-500" /><span>Profile Information</span>
                 </h3>
 
@@ -284,7 +291,7 @@ const ProfilePage = () => {
 
                   {/* Full name */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
                     <div className="relative">
                       <FaUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                       <input
@@ -299,7 +306,7 @@ const ProfilePage = () => {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
                     <div className="relative">
                       <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                       <input
@@ -314,25 +321,25 @@ const ProfilePage = () => {
 
                   {/* Role — read-only, cannot be changed post-registration */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
                     <input
                       type="text"
                       value={user?.role || 'student'}
                       disabled
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-400 text-sm capitalize cursor-not-allowed"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-400 text-sm capitalize cursor-not-allowed"
                     />
                     <p className="text-xs text-slate-400 mt-1">Role cannot be changed after registration</p>
                   </div>
 
                   {/* Teacher-only fields */}
                   {isTeacher && (
-                    <div className="space-y-5 pt-4 border-t border-slate-100">
+                    <div className="space-y-5 pt-4 border-t border-slate-100 dark:border-slate-700">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                         Teacher Details
                       </p>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Degree</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Degree</label>
                         <div className="relative">
                           <FaGraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                           <input
@@ -346,7 +353,7 @@ const ProfilePage = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Teaching</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Years of Teaching</label>
                         <div className="relative">
                           <FaBriefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                           <input
@@ -362,7 +369,7 @@ const ProfilePage = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                           Experience Description
                           <span className="ml-2 text-xs text-slate-400 font-normal">
                             ({profileData.experienceDescription.length}/500)
@@ -374,7 +381,7 @@ const ProfilePage = () => {
                           rows={4}
                           maxLength={500}
                           placeholder="Describe your teaching background, subjects, and expertise…"
-                          className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-900 text-sm placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300"
+                          className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300 dark:border-slate-600"
                         />
                       </div>
                     </div>
@@ -396,11 +403,11 @@ const ProfilePage = () => {
 
             {/* ══ Password ════════════════════════════════════════════════════ */}
             {activeSection === 'password' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                   <FaLock className="text-blue-500" /><span>Change Password</span>
                 </h3>
-                <p className="text-sm text-slate-500 mb-5">Choose a strong password to keep your account secure.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Choose a strong password to keep your account secure.</p>
 
                 <StatusBanner success={passwordSuccess} error={passwordError} />
 
@@ -411,7 +418,7 @@ const ProfilePage = () => {
                     { label: 'Confirm New Password',  key: 'confirmPassword', placeholder: 'Repeat new password'    },
                   ].map((field) => (
                     <div key={field.key}>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">{field.label}</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{field.label}</label>
                       <div className="relative">
                         <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
                         <input
@@ -427,7 +434,7 @@ const ProfilePage = () => {
 
                   {/* Password strength checklist — only visible while typing */}
                   {passwordData.newPassword && (
-                    <div className="p-3 bg-slate-50 rounded-xl space-y-1.5">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-1.5">
                       <PasswordRule met={passwordData.newPassword.length >= 6}          label="At least 6 characters"  />
                       <PasswordRule met={/[A-Z]/.test(passwordData.newPassword)}        label="One uppercase letter"   />
                       <PasswordRule met={/[0-9]/.test(passwordData.newPassword)}        label="One number"             />
@@ -446,57 +453,13 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* ══ Notifications ════════════════════════════════════════════════ */}
-            {activeSection === 'notifications' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-                  <FaBell className="text-blue-500" /><span>Notification Preferences</span>
-                </h3>
-                <p className="text-sm text-slate-500 mb-6">Choose what updates you want to receive.</p>
-
-                <div className="space-y-3">
-                  {NOTIF_ITEMS.map(({ key, label, desc }) => (
-                    <div
-                      key={key}
-                      className="flex items-start justify-between p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors"
-                    >
-                      <div className="flex-1 pr-4">
-                        <p className="text-sm font-semibold text-slate-900">{label}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
-                      </div>
-                      {/* Toggle switch — custom CSS, no external library needed */}
-                      <button
-                        onClick={() => setNotifPrefs((p) => ({ ...p, [key]: !p[key] }))}
-                        role="switch"
-                        aria-checked={notifPrefs[key]}
-                        aria-label={label}
-                        className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
-                          notifPrefs[key] ? 'bg-blue-600' : 'bg-slate-300'
-                        }`}
-                      >
-                        <span
-                          className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                            notifPrefs[key] ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <button className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow flex items-center gap-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
-                  <FaCheckCircle /><span>Save Preferences</span>
-                </button>
-              </div>
-            )}
-
             {/* ══ Account ══════════════════════════════════════════════════════ */}
             {activeSection === 'account' && (
               <div className="space-y-6">
 
                 {/* Account details read-out */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
                     <FaShieldAlt className="text-blue-500" /><span>Account Details</span>
                   </h3>
                   <div className="space-y-0 divide-y divide-slate-100">
@@ -511,8 +474,8 @@ const ProfilePage = () => {
                       ] : []),
                     ].map((item) => (
                       <div key={item.label} className="flex items-center justify-between py-3">
-                        <span className="text-sm text-slate-500">{item.label}</span>
-                        <span className={`text-sm font-medium capitalize ${item.verified === false ? 'text-red-500' : 'text-slate-900'}`}>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">{item.label}</span>
+                        <span className={`text-sm font-medium capitalize ${item.verified === false ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}>
                           {item.value}
                         </span>
                       </div>
@@ -521,55 +484,113 @@ const ProfilePage = () => {
                 </div>
 
                 {/* Danger zone */}
-                <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-red-200 dark:border-red-800/30 p-6">
                   <h3 className="text-lg font-bold text-red-600 mb-4 flex items-center gap-2">
                     <FaTrash /><span>Danger Zone</span>
                   </h3>
                   <div className="space-y-3">
 
                     {/* Log out all devices */}
-                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
+                    <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">Log out of all devices</p>
-                        <p className="text-xs text-slate-500 mt-0.5">Revoke all active sessions</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">Log out of all devices</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Revoke all active sessions</p>
                       </div>
                       <button
                         onClick={() => { logout(); navigate('/login'); }}
-                        className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-300"
+                        className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-300"
                       >
                         Log Out
                       </button>
                     </div>
 
-                    {/* Delete account — shows an inline confirmation instead of window.alert */}
-                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">Delete Account</p>
-                        <p className="text-xs text-slate-500 mt-0.5">Permanently delete your account and all data</p>
-                      </div>
-                      {showDeleteConfirm ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-slate-500">Are you sure?</span>
-                          <button
-                            onClick={() => alert('Contact support to delete your account')}
-                            className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors"
-                          >
-                            Yes, delete
-                          </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(false)}
-                            className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-300 transition-colors"
-                          >
-                            Cancel
-                          </button>
+                    {/* Delete account — password required to confirm */}
+                    <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">Delete Account</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Permanently delete your account, enrollments, progress, and (for teachers) courses you created.
+                          </p>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => setShowDeleteConfirm(true)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
-                        >
-                          Delete
-                        </button>
+                        {!showDeleteConfirm ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowDeleteConfirm(true);
+                              setDeleteError('');
+                              setDeletePassword('');
+                            }}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 self-start"
+                          >
+                            Delete
+                          </button>
+                        ) : null}
+                      </div>
+                      {showDeleteConfirm && (
+                        <div className="space-y-2 pt-1 border-t border-red-200/60 dark:border-red-800/40">
+                          <label className="block text-xs font-medium text-slate-600 dark:text-slate-300">
+                            Enter your password to confirm
+                            <input
+                              type="password"
+                              autoComplete="current-password"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              className={
+                                'mt-1 w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm ' +
+                                'bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 outline-none ' +
+                                'focus:ring-2 focus:ring-red-500 focus:border-transparent'
+                              }
+                              placeholder="Current password"
+                            />
+                          </label>
+                          {deleteError && (
+                            <p className="text-xs text-red-600 dark:text-red-400" role="alert">{deleteError}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={deleteLoading}
+                              onClick={async () => {
+                                setDeleteError('');
+                                if (!deletePassword.trim()) {
+                                  setDeleteError('Password is required');
+                                  return;
+                                }
+                                setDeleteLoading(true);
+                                try {
+                                  await authAPI.deleteAccount(deletePassword);
+                                  logout();
+                                  navigate('/login', { replace: true });
+                                } catch (err) {
+                                  const msg =
+                                    err.response?.data?.message ||
+                                    err.response?.data?.errors?.[0]?.msg ||
+                                    err.message ||
+                                    'Could not delete account';
+                                  setDeleteError(msg);
+                                } finally {
+                                  setDeleteLoading(false);
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {deleteLoading ? 'Deleting…' : 'Yes, delete my account'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={deleteLoading}
+                              onClick={() => {
+                                setShowDeleteConfirm(false);
+                                setDeletePassword('');
+                                setDeleteError('');
+                              }}
+                              className="px-3 py-1.5 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>

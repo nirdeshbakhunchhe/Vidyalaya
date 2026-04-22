@@ -61,7 +61,7 @@ const Home = () => {
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                         isActive
                           ? 'bg-blue-500 text-white shadow-md'
-                          : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800'
                       }`}
                     >
                       <Icon className="text-sm" />
@@ -79,7 +79,7 @@ const Home = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors rounded-lg hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
                 >
                   <FaBell className="text-lg" />
                   {unread > 0 && (
@@ -106,7 +106,7 @@ const Home = () => {
                           key={n.id}
                           className={`px-4 py-3 flex items-start space-x-3 ${!n.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}
                         >
-                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.read ? 'bg-blue-500' : 'bg-slate-300'}`} />
+                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.read ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
                           <div>
                             <p className="text-sm text-slate-700 dark:text-slate-300">{n.message}</p>
                             <p className="text-xs text-slate-400 mt-0.5">{n.time}</p>
@@ -129,7 +129,7 @@ const Home = () => {
               {/* Logout (desktop) */}
               <button
                 onClick={handleLogout}
-                className="hidden sm:flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="hidden sm:flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
               >
                 <FaSignOutAlt className="text-sm" />
                 <span>Logout</span>
@@ -138,7 +138,7 @@ const Home = () => {
               {/* Mobile toggle */}
               <button
                 onClick={() => setMobileMenu(!mobileMenu)}
-                className="md:hidden p-2 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="md:hidden p-2 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
               >
                 {mobileMenu ? <FaTimes /> : <FaBars />}
               </button>
@@ -158,7 +158,7 @@ const Home = () => {
                     className={`w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-blue-500 text-white'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700'
                     }`}
                   >
                     <Icon className="text-sm" />
@@ -168,7 +168,7 @@ const Home = () => {
               })}
               <button
                 onClick={() => { handleLogout(); setMobileMenu(false); }}
-                className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="w-full text-left flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/20"
               >
                 <FaSignOutAlt className="text-sm" />
                 <span>Logout</span>

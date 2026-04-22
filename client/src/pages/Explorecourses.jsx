@@ -212,12 +212,12 @@ const ExploreCourses = () => {
                       )}
 
                       {/* Badges */}
-                      <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
+                      <span className="absolute top-3 left-3 px-2.5 py-1 bg-white dark:bg-slate-900/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
                         {course.price && Number(course.price) > 0
                           ? `NPR ${Number(course.price).toLocaleString()}`
                           : 'Free'}
                       </span>
-                      <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize shadow-sm">
+                      <span className="absolute top-3 right-3 px-2.5 py-1 bg-white dark:bg-slate-900/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize shadow-sm">
                         {course.level}
                       </span>
                     </div>
@@ -420,12 +420,12 @@ const ExploreCourses = () => {
                             </div>
                           </div>
                         )}
-                        <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
+                        <span className="absolute top-3 left-3 px-2.5 py-1 bg-white dark:bg-slate-900/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
                           {course.price && Number(course.price) > 0
                             ? `NPR ${Number(course.price).toLocaleString()}`
                             : 'Free'}
                         </span>
-                        <span className="absolute top-3 right-3 px-2.5 py-1 bg-white/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize shadow-sm">
+                        <span className="absolute top-3 right-3 px-2.5 py-1 bg-white dark:bg-slate-900/95 dark:bg-slate-900/90 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize shadow-sm">
                           {course.level}
                         </span>
                       </div>

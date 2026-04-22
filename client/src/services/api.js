@@ -49,6 +49,11 @@ export const authAPI = {
     return data;
   },
 
+  verifyResetOtp: async (email, otp) => {
+    const { data } = await api.post('/auth/verify-reset-otp', { email, otp });
+    return data;
+  },
+
   resetPasswordWithOtp: async (email, otp, newPassword) => {
     const { data } = await api.post('/auth/reset-password', {
       email,
@@ -71,6 +76,12 @@ export const authAPI = {
 
   changePassword: async (currentPassword, newPassword) => {
     const { data } = await api.put('/auth/change-password', { currentPassword, newPassword });
+    return data;
+  },
+
+  /** Permanently delete the logged-in account (requires current password). */
+  deleteAccount: async (password) => {
+    const { data } = await api.delete('/auth/account', { data: { password } });
     return data;
   },
 
@@ -106,6 +117,21 @@ export const adminAPI = {
   // Delete a user
   deleteUser: async (id) => {
     const { data } = await api.delete(`/auth/admin/users/${id}`);
+    return data;
+  },
+
+  getPendingTeachers: async () => {
+    const { data } = await api.get('/auth/admin/pending-teachers');
+    return data.users;
+  },
+
+  approveTeacher: async (id) => {
+    const { data } = await api.put(`/auth/admin/approve-teacher/${id}`);
+    return data.user;
+  },
+
+  rejectTeacher: async (id) => {
+    const { data } = await api.delete(`/auth/admin/reject-teacher/${id}`);
     return data;
   },
 
@@ -393,7 +419,23 @@ export const progressAPI = {
   }
 };
 
+// ── Analytics API (Study Analytics) ──────────────────────────────────────────
+export const analyticsAPI = {
+  getSummary: async (params = {}) => {
+    const { data } = await api.get('/analytics/summary', { params });
+    return data;
+  },
+};
+
 export default api;
+
+// ── Leaderboard API ──────────────────────────────────────────────────────────
+export const leaderboardAPI = {
+  getLeaderboard: async (params = {}) => {
+    const { data } = await api.get('/leaderboard', { params });
+    return data;
+  },
+};
 
 // ── Notification API ─────────────────────────────────────────────────────────
 export const notificationAPI = {

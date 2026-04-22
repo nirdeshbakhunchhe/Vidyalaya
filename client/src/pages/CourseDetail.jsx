@@ -22,34 +22,6 @@ import {
   FaMoneyBillWave,   // NEW — for Pay Now button and price display
 } from 'react-icons/fa';
 
-// ─── Fallback curriculum (used only when backend curriculum is empty) ────────
-const MOCK_CURRICULUM = [
-  {
-    section: 'Getting Started',
-    lessons: [
-      { title: 'Welcome & Course Overview',    duration: '5 min',  free: true  },
-      { title: 'Setting Up Your Environment',  duration: '12 min', free: true  },
-      { title: 'Your First Program',           duration: '18 min', free: false },
-    ],
-  },
-  {
-    section: 'Core Concepts',
-    lessons: [
-      { title: 'Variables & Data Types',  duration: '22 min', free: false },
-      { title: 'Control Flow & Loops',    duration: '30 min', free: false },
-      { title: 'Functions & Scope',       duration: '25 min', free: false },
-    ],
-  },
-  {
-    section: 'Advanced Topics',
-    lessons: [
-      { title: 'Object-Oriented Programming', duration: '40 min', free: false },
-      { title: 'Error Handling',              duration: '20 min', free: false },
-      { title: 'Final Project',               duration: '60 min', free: false },
-    ],
-  },
-];
-
 const WHAT_YOU_LEARN = [
   'Build real-world projects from scratch',
   'Understand core programming concepts',
@@ -109,8 +81,8 @@ const CourseDetail = () => {
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [openSection, setOpenSection] = useState(0);
 
-  const curriculum =
-    course?.curriculum && course.curriculum.length > 0 ? course.curriculum : MOCK_CURRICULUM;
+  const curriculum = course?.curriculum ?? [];
+  const lessonCount = curriculum.reduce((acc, s) => acc + (s.lessons?.length ?? 0), 0);
 
   // Guard: redirect if ID is not a valid MongoDB ObjectId
   useEffect(() => {
@@ -270,7 +242,7 @@ const CourseDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
 
       {/* ── Navbar (unchanged) ─────────────────────────────────────────────── */}
-      <nav className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-slate-900/80 dark:bg-slate-800/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
@@ -369,41 +341,48 @@ const CourseDetail = () => {
                 <FaPlayCircle className="text-primary-500" /><span>Course Curriculum</span>
               </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm mb-5">
-                {curriculum.reduce((acc, s) => acc + s.lessons.length, 0)} lessons • {course?.duration}
+                {lessonCount > 0 ? `${lessonCount} lesson${lessonCount === 1 ? '' : 's'}` : 'No lessons yet'}
+                {course?.duration ? ` • ${course.duration}` : ''}
               </p>
-              <div className="space-y-3">
-                {curriculum.map((section, si) => (
-                  <div key={si} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => setOpenSection(openSection === si ? -1 : si)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors text-left"
-                    >
-                      <span className="font-semibold text-slate-900 dark:text-white text-sm">{section.section}</span>
-                      <span className="text-slate-500 dark:text-slate-400 text-xs">{section.lessons.length} lessons</span>
-                    </button>
-                    {openSection === si && (
-                      <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                        {section.lessons.map((lesson, li) => (
-                          <div key={li} className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                            <div className="flex items-center space-x-3">
-                              {lesson.free || isFullyEnrolled
-                                ? <FaPlayCircle className="text-primary-500 flex-shrink-0" />
-                                : <FaLock className="text-slate-400 flex-shrink-0" />}
-                              <span className={`text-sm ${lesson.free || isFullyEnrolled ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
-                                {lesson.title}
-                              </span>
-                              {lesson.free && (
-                                <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">Free</span>
-                              )}
+              {lessonCount === 0 ? (
+                <p className="text-slate-600 dark:text-slate-300 text-sm py-10 px-4 text-center rounded-lg border border-dashed border-slate-200 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-800/40">
+                  This course does not have any published lessons yet. Check back after the instructor adds video content to the curriculum.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {curriculum.map((section, si) => (
+                    <div key={si} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => setOpenSection(openSection === si ? -1 : si)}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors text-left"
+                      >
+                        <span className="font-semibold text-slate-900 dark:text-white text-sm">{section.section}</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">{(section.lessons || []).length} lessons</span>
+                      </button>
+                      {openSection === si && (
+                        <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                          {(section.lessons || []).map((lesson, li) => (
+                            <div key={li} className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-700/50 transition-colors">
+                              <div className="flex items-center space-x-3">
+                                {lesson.free || isFullyEnrolled
+                                  ? <FaPlayCircle className="text-primary-500 flex-shrink-0" />
+                                  : <FaLock className="text-slate-400 flex-shrink-0" />}
+                                <span className={`text-sm ${lesson.free || isFullyEnrolled ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                  {lesson.title}
+                                </span>
+                                {lesson.free && (
+                                  <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">Free</span>
+                                )}
+                              </div>
+                              <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">{lesson.duration}</span>
                             </div>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">{lesson.duration}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Rate this course — only if enrolled */}
@@ -429,7 +408,7 @@ const CourseDetail = () => {
             {/* AI Tutor CTA (unchanged) */}
             <div className="bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl p-6 text-white">
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-white dark:bg-slate-900/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <FaRobot className="text-2xl" />
                 </div>
                 <div className="flex-1">
@@ -437,7 +416,7 @@ const CourseDetail = () => {
                   <p className="text-primary-100 text-sm mb-4">Your AI Tutor is available 24/7 to explain concepts, answer questions, and help you practice.</p>
                   <button
                     onClick={() => navigate('/ai-tutor')}
-                    className="px-5 py-2 bg-white text-primary-600 font-semibold rounded-lg hover:bg-primary-50 transition-colors text-sm"
+                    className="px-5 py-2 bg-white dark:bg-slate-900 text-primary-600 font-semibold rounded-lg hover:bg-primary-50 transition-colors text-sm"
                   >
                     Chat with AI Tutor
                   </button>
@@ -513,7 +492,7 @@ const CourseDetail = () => {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400"><FaBook /><span>Lessons</span></div>
                   <span className="font-semibold text-slate-900 dark:text-white">
-                    {curriculum.reduce((acc, s) => acc + s.lessons.length, 0)}
+                    {lessonCount}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">

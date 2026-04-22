@@ -40,7 +40,7 @@ const Landing = () => {
               </button>
               <Link
                 to="/about"
-                className="inline-flex items-center justify-center px-5 py-3 rounded-xl font-semibold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 dark:text-white dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 transition-colors"
+                className="inline-flex items-center justify-center px-5 py-3 rounded-xl font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 dark:text-white dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 transition-colors"
               >
                 About Vidyalaya
               </Link>
@@ -51,7 +51,7 @@ const Landing = () => {
 
           <div className="relative">
             <div className="absolute -inset-2 bg-gradient-to-r from-primary-200/40 to-primary-400/20 blur-2xl rounded-3xl" />
-            <div className="relative bg-white/80 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl">
+            <div className="relative bg-white dark:bg-slate-900/80 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl">
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                   <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Adaptive learning</div>

@@ -77,6 +77,44 @@ const formatCourse = (course, userId) => ({
   createdAt: course.createdAt,
 });
 
+/** Lesson count from stored curriculum sections (may be 0 if teacher never uploaded). */
+const countCurriculumLessons = (curriculum) => {
+  if (!Array.isArray(curriculum)) return 0;
+  return curriculum.reduce((sum, sec) => sum + (sec.lessons?.length ?? 0), 0);
+};
+
+/**
+ * Curriculum shown on course detail: use DB curriculum when it has lessons;
+ * otherwise derive section titles from uploaded videos (titles only, no URLs).
+ */
+const displayCurriculumForCourse = (course) => {
+  const raw = course.curriculum || [];
+  if (countCurriculumLessons(raw) > 0) {
+    return raw.map((sec) => ({
+      section: sec.section,
+      lessons: (sec.lessons || []).map((l) => ({
+        title: l.title,
+        duration: l.duration ?? '',
+        free: !!l.free,
+      })),
+    }));
+  }
+  const videos = course.videos || [];
+  if (videos.length > 0) {
+    return [
+      {
+        section: 'Lessons',
+        lessons: videos.map((v) => ({
+          title: v.title || 'Lesson',
+          duration: '',
+          free: false,
+        })),
+      },
+    ];
+  }
+  return [];
+};
+
 // ─── GET /api/courses/my/enrolled ─────────────────────────────────────────────
 // Protected. Get all courses the current user is enrolled in.
 // MUST BE BEFORE /:id route
@@ -245,9 +283,12 @@ router.get(
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
+    const formatted = formatCourse(course, req.user._id);
+    formatted.curriculum = displayCurriculumForCourse(course);
+
     res.json({
       success: true,
-      course: formatCourse(course, req.user._id),
+      course: formatted,
     });
   })
 );

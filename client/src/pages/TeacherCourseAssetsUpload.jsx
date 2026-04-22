@@ -35,7 +35,7 @@ const isValidObjectId = (id) => /^[0-9a-f]{24}$/i.test(id);
 // Avoids repeating DashboardNav + TeacherSidebar three times in one file.
 // ─────────────────────────────────────────────────────────────────────────────
 const PageShell = ({ children }) => (
-  <div className="h-screen bg-slate-50 flex flex-col">
+  <div className="h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
     <DashboardNav activePage="/teacher/courses" />
     <div className="flex flex-1 overflow-hidden">
       <TeacherSidebar />
@@ -118,7 +118,7 @@ const TeacherCourseAssetsUpload = () => {
   if (error) {
     return (
       <PageShell>
-        <div className="bg-white border border-red-200 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800/30 rounded-2xl p-6">
           <div className="flex items-start gap-3">
             <FaExclamationCircle className="text-red-500 flex-shrink-0 mt-0.5" />
             <div>
@@ -143,7 +143,7 @@ const TeacherCourseAssetsUpload = () => {
     <PageShell>
 
       {/* ── Course header card ─────────────────────────────────────────────── */}
-      <div className="rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+      <div className="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
 
         {/* Gradient banner with title and back button */}
         <div className={`h-28 bg-gradient-to-r ${headerGradient} p-6 flex items-center gap-3`}>
@@ -151,7 +151,7 @@ const TeacherCourseAssetsUpload = () => {
             type="button"
             onClick={() => navigate('/teacher/courses')}
             aria-label="Back to My Courses"
-            className="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 flex-shrink-0"
+            className="p-2 rounded-xl bg-white dark:bg-slate-900/15 hover:bg-white dark:bg-slate-900/25 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 flex-shrink-0"
           >
             <FaArrowLeft />
           </button>
@@ -168,12 +168,12 @@ const TeacherCourseAssetsUpload = () => {
         </div>
 
         {/* Thumbnail preview — shows uploaded image or gradient placeholder */}
-        <div className="p-6 bg-white">
+        <div className="p-6 bg-white dark:bg-slate-900">
           {course?.image ? (
             <img
               src={course.image}
               alt="Course thumbnail"
-              className="w-full max-h-56 object-cover rounded-2xl border border-slate-200"
+              className="w-full max-h-56 object-cover rounded-2xl border border-slate-200 dark:border-slate-700"
             />
           ) : (
             <div
@@ -188,13 +188,13 @@ const TeacherCourseAssetsUpload = () => {
       {/* ── Upload panels ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900 mb-4">Thumbnail</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Thumbnail</h2>
           <CourseThumbnailUpload courseId={courseId} onUploaded={refreshCourse} />
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900 mb-4">Videos</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Videos</h2>
           <CourseVideosUpload courseId={courseId} onUploaded={refreshCourse} />
         </div>
       </div>
@@ -203,10 +203,10 @@ const TeacherCourseAssetsUpload = () => {
       {/* Uploads are persisted immediately by the upload sub-components;
           this button simply confirms the teacher is done and returns them
           to the My Courses list. */}
-      <div className="mt-6 bg-white rounded-2xl border border-slate-200 px-6 py-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">
+      <div className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 px-6 py-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Uploads are saved instantly. Click{' '}
-          <span className="font-semibold text-slate-700">Save &amp; Continue</span>{' '}
+          <span className="font-semibold text-slate-700 dark:text-slate-300">Save &amp; Continue</span>{' '}
           when you're done.
         </p>
 
@@ -214,7 +214,7 @@ const TeacherCourseAssetsUpload = () => {
           <button
             type="button"
             onClick={() => navigate('/teacher/courses')}
-            className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
           >
             Skip for now
           </button>

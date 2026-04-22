@@ -32,12 +32,15 @@ const progressSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    watchTimeLogs: [
-      {
-        date: { type: String, required: true }, // Format "YYYY-MM-DD"
-        timeSpent: { type: Number, default: 0 }, // In seconds
-      },
-    ],
+    watchTimeLogs: {
+      type: [
+        {
+          date: { type: String, required: true }, // Format "YYYY-MM-DD"
+          timeSpent: { type: Number, default: 0 }, // In seconds
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

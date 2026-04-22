@@ -58,9 +58,38 @@ const SUBJECTS = [
 // Helpers
 // =============================================================================
 
+// Removes common markdown tokens that look noisy in chat bubbles.
+// Important: we only apply this to plain-text segments (not inside ```code```).
+const prettifyAiPlainText = (text) => {
+  if (!text) return text;
+
+  let out = String(text).replace(/\r\n/g, '\n');
+
+  // Headings like "## Title" → "Title"
+  out = out.replace(/^\s{0,3}#{1,6}\s+/gm, '');
+
+  // Horizontal rules like "***" or "---" on their own line → removed
+  out = out.replace(/^\s*([*\-_])\1\1+\s*$/gm, '');
+
+  // Bold markers like "**text**" or "__text__" → "text"
+  out = out.replace(/\*\*([^\n*]+)\*\*/g, '$1');
+  out = out.replace(/__([^\n_]+)__/g, '$1');
+
+  // Stray triple-asterisk emphasis tokens (not bullet points) → removed
+  out = out.replace(/(^|[^\S\n])\*{3,}(?=([^\S\n]|$))/g, '$1');
+
+  // Inline code markers `x` → x
+  out = out.replace(/`([^`\n]+)`/g, '$1');
+
+  // Collapse excessive blank lines
+  out = out.replace(/\n{3,}/g, '\n\n');
+
+  return out;
+};
+
 // Parses AI response text and renders fenced code blocks with syntax highlighting.
 // Plain text segments are wrapped in <span> with whitespace-pre-wrap preserved.
-const renderMessageContent = (content) => {
+const renderMessageContent = (content, { prettifyPlainText = false } = {}) => {
   const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
   const parts = [];
   let lastIndex = 0;
@@ -71,7 +100,9 @@ const renderMessageContent = (content) => {
     if (match.index > lastIndex) {
       parts.push(
         <span key={`text-${lastIndex}`} className="whitespace-pre-wrap">
-          {content.substring(lastIndex, match.index)}
+          {prettifyPlainText
+            ? prettifyAiPlainText(content.substring(lastIndex, match.index))
+            : content.substring(lastIndex, match.index)}
         </span>
       );
     }
@@ -108,7 +139,9 @@ const renderMessageContent = (content) => {
   if (lastIndex < content.length) {
     parts.push(
       <span key={`text-${lastIndex}`} className="whitespace-pre-wrap">
-        {content.substring(lastIndex)}
+        {prettifyPlainText
+          ? prettifyAiPlainText(content.substring(lastIndex))
+          : content.substring(lastIndex)}
       </span>
     );
   }
@@ -310,19 +343,19 @@ const AITutorChat = () => {
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
 
         {/* Card wrapper — header + subject bar + chat area share one rounded card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden"
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden"
              style={{ height: 'calc(100vh - 140px)', minHeight: '520px' }}>
 
           {/* ── Card header ──────────────────────────────────────────────── */}
-          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center space-x-3">
               {/* AI avatar icon */}
               <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow">
                 <FaRobot className="text-white text-lg" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">AI Tutor Assistant</h1>
-                <p className="text-xs text-slate-500">Powered by Google Gemini AI</p>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">AI Tutor Assistant</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Powered by Google Gemini AI</p>
               </div>
             </div>
 
@@ -332,7 +365,7 @@ const AITutorChat = () => {
                 onClick={clearChat}
                 aria-label="Clear chat"
                 title="Clear Chat"
-                className="p-2.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-300"
+                className="p-2.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-lg hover:bg-red-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-300"
               >
                 <FaTrash />
               </button>
@@ -340,7 +373,7 @@ const AITutorChat = () => {
           </div>
 
           {/* ── Subject selector ─────────────────────────────────────────── */}
-          <div className="px-6 py-3 border-b border-slate-200 bg-slate-50 flex-shrink-0 overflow-x-auto">
+          <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0 overflow-x-auto">
             <div className="flex gap-2 w-max">
               {SUBJECTS.map((s) => {
                 const { id, name, activeClass, icon } = s;
@@ -354,7 +387,7 @@ const AITutorChat = () => {
                       'flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400',
                       selectedSubject === id
                         ? `${activeClass} text-white shadow scale-105`
-                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200',
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700',
                     ].join(' ')}
                   >
                     <Icon className="text-xs" />
@@ -372,7 +405,7 @@ const AITutorChat = () => {
             {error && (
               <div
                 role="alert"
-                className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl"
+                className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-700 text-sm px-4 py-3 rounded-xl"
               >
                 <FaExclamationCircle className="flex-shrink-0" />
                 <span>{error}</span>
@@ -380,8 +413,8 @@ const AITutorChat = () => {
             )}
 
             {loadingHistory ? (
-              <div className="flex items-center justify-center py-10 text-slate-500">
-                <div className="w-7 h-7 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
+              <div className="flex items-center justify-center py-10 text-slate-500 dark:text-slate-400">
+                <div className="w-7 h-7 border-2 border-slate-200 dark:border-slate-700 border-t-blue-500 rounded-full animate-spin" />
               </div>
             ) : (
               messages.map((message) => (
@@ -415,18 +448,18 @@ const AITutorChat = () => {
                         'rounded-2xl px-4 py-3 text-sm leading-relaxed',
                         message.type === 'ai'
                           ? message.isError
-                            ? 'bg-red-50 text-red-800 border border-red-200'
-                            : 'bg-slate-100 text-slate-900'
+                            ? 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800/30'
+                            : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
                           : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white',
                       ].join(' ')}
                     >
-                      {renderMessageContent(message.content)}
+                      {renderMessageContent(message.content, { prettifyPlainText: message.type === 'ai' })}
 
                       {/* Attached files shown inside the user bubble */}
                       {message.files && message.files.length > 0 && (
                         <div className="mt-3 space-y-2">
                           {message.files.map((file, idx) => (
-                            <div key={idx} className="flex items-center space-x-2 bg-white/10 rounded-lg p-2">
+                            <div key={idx} className="flex items-center space-x-2 bg-white dark:bg-slate-900/10 rounded-lg p-2">
                               {file.type === 'image' ? (
                                 <>
                                   <FaImage className="text-xs flex-shrink-0" />
@@ -474,7 +507,7 @@ const AITutorChat = () => {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center">
                   <FaRobot className="text-white text-xs" />
                 </div>
-                <div className="bg-slate-100 rounded-2xl px-4 py-3">
+                <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl px-4 py-3">
                   <div className="flex space-x-1.5">
                     {[0, 150, 300].map((delay) => (
                       <div
@@ -494,12 +527,12 @@ const AITutorChat = () => {
 
           {/* ── Staged file previews ─────────────────────────────────────── */}
           {uploadedFiles.length > 0 && (
-            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex-shrink-0">
+            <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
               <div className="flex items-center space-x-2 overflow-x-auto">
                 {uploadedFiles.map((file, index) => (
                   <div
                     key={index}
-                    className="relative flex-shrink-0 bg-white rounded-lg p-2 border border-slate-200"
+                    className="relative flex-shrink-0 bg-white dark:bg-slate-700 rounded-lg p-2 border border-slate-200 dark:border-slate-600"
                   >
                     {file.type === 'image' ? (
                       <img
@@ -510,7 +543,7 @@ const AITutorChat = () => {
                     ) : (
                       <div className="h-16 w-16 flex flex-col items-center justify-center">
                         <FaFile className="text-2xl text-slate-400" />
-                        <p className="text-xs text-slate-500 mt-1 truncate w-full text-center">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate w-full text-center">
                           {file.name.slice(0, 8)}
                         </p>
                       </div>
@@ -529,7 +562,7 @@ const AITutorChat = () => {
           )}
 
           {/* ── Input bar ────────────────────────────────────────────────── */}
-          <div className="px-6 py-4 border-t border-slate-200 flex-shrink-0">
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
             <div className="flex items-end gap-2">
 
               {/* Hidden file inputs — triggered by icon buttons below */}
@@ -554,7 +587,7 @@ const AITutorChat = () => {
                 onClick={() => imageInputRef.current?.click()}
                 aria-label="Upload image"
                 title="Upload Image"
-                className="p-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0"
+                className="p-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0"
               >
                 <FaImage />
               </button>
@@ -562,7 +595,7 @@ const AITutorChat = () => {
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Upload file"
                 title="Upload File"
-                className="p-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0"
+                className="p-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0"
               >
                 <FaFile />
               </button>
@@ -575,7 +608,7 @@ const AITutorChat = () => {
                 placeholder="Ask me anything…"
                 rows={1}
                 style={{ minHeight: '48px', maxHeight: '120px' }}
-                className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 bg-white outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300"
+                className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 bg-white dark:bg-slate-700 outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300 dark:hover:border-slate-500"
               />
 
               {/* Send button */}
@@ -592,8 +625,8 @@ const AITutorChat = () => {
             </div>
 
             <p className="text-xs text-slate-400 mt-2">
-              Press <kbd className="px-1 py-0.5 bg-slate-100 rounded text-slate-500 font-mono text-[10px]">Enter</kbd> to send,{' '}
-              <kbd className="px-1 py-0.5 bg-slate-100 rounded text-slate-500 font-mono text-[10px]">Shift+Enter</kbd> for new line
+              Press <kbd className="px-1 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-slate-500 dark:text-slate-400 font-mono text-[10px]">Enter</kbd> to send,{' '}
+              <kbd className="px-1 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-slate-500 dark:text-slate-400 font-mono text-[10px]">Shift+Enter</kbd> for new line
             </p>
           </div>
         </div>

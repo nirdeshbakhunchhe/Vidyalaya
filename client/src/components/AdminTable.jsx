@@ -109,7 +109,7 @@ const AdminTable = ({
               <tr>
                 <td
                   colSpan={columns.length + (renderActions ? 1 : 0)}
-                  className="px-4 py-10 text-center text-sm text-slate-400 dark:text-slate-500"
+                  className="px-4 py-10 text-center text-sm text-slate-400 dark:text-slate-500 dark:text-slate-400"
                 >
                   No records found.
                 </td>
@@ -118,7 +118,7 @@ const AdminTable = ({
               currentRows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition-colors"
+                  className="border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 dark:hover:bg-slate-700/40 transition-colors"
                 >
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
@@ -143,28 +143,28 @@ const AdminTable = ({
           <button
             onClick={() => handlePageChange(1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
           >
             «
           </button>
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
           >
             Prev
           </button>
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
           >
             Next
           </button>
           <button
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
           >
             »
           </button>

@@ -44,7 +44,7 @@ const FEATURES = [
 // ─────────────────────────────────────────────────────────────────────────────
 const INPUT_CLASS =
   'w-full px-4 py-3 border border-slate-200 rounded-xl text-sm ' +
-  'bg-slate-50 text-slate-900 placeholder-slate-400 ' +
+  'bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 ' +
   'outline-none transition-all ' +
   'focus:ring-2 focus:ring-blue-500 focus:border-transparent ' +
   'hover:border-slate-300';
@@ -91,7 +91,7 @@ const Login = () => {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
       <div className="flex flex-1">
@@ -113,7 +113,7 @@ const Login = () => {
           />
 
           {/* Ambient glow blobs — purely decorative */}
-          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5 dark:bg-slate-900/5 blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-blue-300/10 blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center text-center px-12 py-16 gap-8">
@@ -123,7 +123,7 @@ const Login = () => {
               <img
                 src={logo}
                 alt="Vidyalaya logo"
-                className="h-16 w-16 rounded-2xl object-contain bg-white/10 p-2 shadow-2xl ring-2 ring-white/20"
+                className="h-16 w-16 rounded-2xl object-contain bg-white/10 dark:bg-slate-900/10 p-2 shadow-2xl ring-2 ring-white/20"
               />
               <h1 className="text-5xl font-black text-white tracking-tight drop-shadow-lg">
                 Vidyalaya
@@ -140,9 +140,9 @@ const Login = () => {
               {FEATURES.map(({ icon: Icon, text }) => (
                 <div
                   key={text}
-                  className="flex items-center gap-3 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10 transition-colors"
+                  className="flex items-center gap-3 bg-white/10 dark:bg-slate-900/40 hover:bg-white/20 dark:hover:bg-slate-900/60 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 dark:bg-slate-900/50 flex items-center justify-center flex-shrink-0">
                     <Icon className="text-white text-sm" />
                   </div>
                   <span className="text-white/90 text-sm font-medium">{text}</span>
@@ -163,10 +163,10 @@ const Login = () => {
             </div>
 
             {/* Form card */}
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-8">
 
               <div className="mb-6">
-                <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Welcome Back</h2>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">Welcome Back</h2>
                 <p className="text-sm text-slate-500">Sign in to continue your learning journey</p>
               </div>
 
@@ -174,7 +174,7 @@ const Login = () => {
               {error && (
                 <div
                   role="alert"
-                  className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-2"
+                  className="mb-5 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl text-red-600 text-sm flex items-center gap-2"
                 >
                   <FaExclamationCircle className="flex-shrink-0" />
                   <span>{error}</span>
@@ -228,6 +228,14 @@ const Login = () => {
                       placeholder="Enter your password"
                       className={`${INPUT_CLASS} pl-10`}
                     />
+                  </div>
+                  <div className="flex justify-end mt-1.5">
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline focus:outline-none"
+                    >
+                      Forgot password?
+                    </Link>
                   </div>
                 </div>
 

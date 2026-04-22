@@ -11,6 +11,8 @@ const STUDENT_ROUTE_PREFIXES = [
   '/profile',
   '/explore-courses',
   '/ai-tutor',
+  '/analytics',
+  '/leaderboard',
   '/student/',
 ];
 

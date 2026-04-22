@@ -41,10 +41,10 @@ const formatBytes = (b) => {
 // Status display config — pill colours for each upload state.
 // "done" uses an icon-based label rendered in JSX below rather than a text string.
 const STATUS_CONFIG = {
-  pending:   { pillClass: 'bg-slate-100 text-slate-500'  },
-  uploading: { pillClass: 'bg-blue-50   text-blue-600'   },
+  pending:   { pillClass: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'  },
+  uploading: { pillClass: 'bg-blue-50 dark:bg-blue-900/20   text-blue-600'   },
   done:      { pillClass: 'bg-emerald-50 text-emerald-600' },
-  error:     { pillClass: 'bg-red-50    text-red-600'    },
+  error:     { pillClass: 'bg-red-50 dark:bg-red-900/20    text-red-600'    },
 };
 
 const VideoItem = ({ item, onTitleChange, onRemove, disabled }) => {
@@ -60,14 +60,14 @@ const VideoItem = ({ item, onTitleChange, onRemove, disabled }) => {
     : 'Failed';
 
   return (
-    <div className="rounded-xl border border-slate-200 overflow-hidden bg-white transition-all">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 transition-all">
 
       {/* Header row */}
-      <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-slate-100">
+      <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-slate-100 dark:border-slate-700">
         <div className="w-7 h-7 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center flex-shrink-0">
           <FaVideo className="text-[11px] text-violet-500" />
         </div>
-        <p className="text-xs font-medium text-slate-600 truncate flex-1 min-w-0">
+        <p className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate flex-1 min-w-0">
           {item.file.name}
         </p>
 
@@ -89,7 +89,7 @@ const VideoItem = ({ item, onTitleChange, onRemove, disabled }) => {
             onClick={() => onRemove(item.id)}
             disabled={disabled}
             aria-label={`Remove ${item.file.name}`}
-            className="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-40 focus:outline-none"
+            className="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:bg-red-900/20 transition-colors flex-shrink-0 disabled:opacity-40 focus:outline-none"
           >
             <FaTimes className="text-[10px]" />
           </button>
@@ -105,7 +105,7 @@ const VideoItem = ({ item, onTitleChange, onRemove, disabled }) => {
           disabled={disabled || item.status === 'uploading' || item.status === 'done'}
           placeholder="Video title…"
           maxLength={200}
-          className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed"
         />
 
         {(item.status === 'uploading' || item.status === 'done') && (
@@ -214,7 +214,7 @@ const CourseVideosUpload = ({ courseId, onUploaded, maxVideos = 10 }) => {
         <div className="w-6 h-6 rounded-lg bg-violet-100 flex items-center justify-center">
           <FaVideo className="text-xs text-violet-600" />
         </div>
-        <h4 className="text-sm font-semibold text-slate-800">Course Videos</h4>
+        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Course Videos</h4>
         {doneCount > 0 && (
           <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
             <FaCheck className="text-[10px]" /> {doneCount} uploaded
@@ -242,16 +242,16 @@ const CourseVideosUpload = ({ courseId, onUploaded, maxVideos = 10 }) => {
           bulkUploading ? 'opacity-50 cursor-not-allowed' : '',
           dragOver
             ? 'border-violet-400 bg-violet-50 scale-[1.01]'
-            : 'border-slate-200 bg-slate-50 hover:border-violet-300 hover:bg-violet-50/40',
+            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-violet-300 hover:bg-violet-50/40',
         ].join(' ')}
       >
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
-          dragOver ? 'bg-violet-100' : 'bg-white shadow-sm border border-slate-100'
+          dragOver ? 'bg-violet-100' : 'bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-700'
         }`}>
           <FaVideo className={`text-xl ${dragOver ? 'text-violet-500' : 'text-slate-300'}`} />
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-slate-700">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
             Drop videos here or{' '}
             <span className="text-violet-600">browse</span>
           </p>

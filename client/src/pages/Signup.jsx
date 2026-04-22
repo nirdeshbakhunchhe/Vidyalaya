@@ -57,18 +57,18 @@ const ROLES = [
 // Defined once so every field stays visually consistent.
 // ─────────────────────────────────────────────────────────────────────────────
 const INPUT_CLASS =
-  'w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl ' +
-  'bg-white text-slate-800 text-sm placeholder-slate-400 ' +
+  'w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl ' +
+  'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-sm placeholder-slate-400 ' +
   'outline-none transition-all ' +
   'focus:ring-2 focus:ring-blue-500 focus:border-transparent ' +
-  'hover:border-slate-300';
+  'hover:border-slate-300 dark:border-slate-600';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Reusable labelled field wrapper — keeps label + input markup DRY.
 // ─────────────────────────────────────────────────────────────────────────────
 const Field = ({ label, suffix, children }) => (
   <div>
-    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
       {label}
       {suffix && <span className="font-normal normal-case text-slate-400">{suffix}</span>}
     </label>
@@ -94,6 +94,7 @@ const Signup = () => {
   const [role, setRole]           = useState('student');
   const [formData, setFormData]   = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [teacherData, setTeacherData] = useState({ degree: '', yearsOfTeaching: '', experienceDescription: '' });
+  const [qualificationFile, setQualificationFile] = useState(null);
   const [avatarFile, setAvatarFile]   = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [showPassword, setShowPassword]   = useState(false);
@@ -107,6 +108,11 @@ const Signup = () => {
 
   const handleTeacherChange = (e) =>
     setTeacherData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleQualificationChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setQualificationFile(file);
+  };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -128,22 +134,33 @@ const Signup = () => {
       if (!teacherData.degree.trim())                  return setError('Degree is required for teachers');
       if (!teacherData.yearsOfTeaching)                return setError('Years of teaching is required');
       if (!teacherData.experienceDescription.trim())   return setError('Experience description is required');
+      if (!qualificationFile)                          return setError('Qualification document is required');
     }
 
     setLoading(true);
     try {
-      const payload = {
-        name:     formData.name,
-        email:    formData.email,
-        password: formData.password,
-        role,
-        ...(role === 'teacher' && {
-          degree:                teacherData.degree,
-          yearsOfTeaching:       Number(teacherData.yearsOfTeaching),
-          experienceDescription: teacherData.experienceDescription,
-        }),
-      };
-      await signup(payload);
+      let finalPayload;
+      if (role === 'teacher') {
+        finalPayload = new FormData();
+        finalPayload.append('name', formData.name);
+        finalPayload.append('email', formData.email);
+        finalPayload.append('password', formData.password);
+        finalPayload.append('role', role);
+        finalPayload.append('degree', teacherData.degree);
+        finalPayload.append('yearsOfTeaching', Number(teacherData.yearsOfTeaching));
+        finalPayload.append('experienceDescription', teacherData.experienceDescription);
+        if (qualificationFile) {
+          finalPayload.append('qualificationDoc', qualificationFile);
+        }
+      } else {
+        finalPayload = {
+          name:     formData.name,
+          email:    formData.email,
+          password: formData.password,
+          role,
+        };
+      }
+      await signup(finalPayload);
       navigate('/verify-otp', { state: { email: formData.email, from: 'signup', role } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -162,7 +179,7 @@ const Signup = () => {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
 
       <Navbar />
 
@@ -185,7 +202,7 @@ const Signup = () => {
           />
 
           {/* Ambient glow blobs — purely decorative */}
-          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5 dark:bg-slate-900/5 blur-3xl pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-blue-300/10 blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center text-center px-12 py-16 gap-8">
@@ -195,7 +212,7 @@ const Signup = () => {
               <img
                 src={logo}
                 alt="Vidyalaya logo"
-                className="h-16 w-16 rounded-2xl object-contain bg-white/10 p-2 shadow-2xl ring-2 ring-white/20"
+                className="h-16 w-16 rounded-2xl object-contain bg-white/10 dark:bg-slate-900/10 p-2 shadow-2xl ring-2 ring-white/20"
               />
               <h1 className="text-5xl font-black text-white tracking-tight drop-shadow-lg">
                 Vidyalaya
@@ -212,9 +229,9 @@ const Signup = () => {
               {FEATURES.map(({ icon: Icon, text }) => (
                 <div
                   key={text}
-                  className="flex items-center gap-3 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10 transition-colors"
+                  className="flex items-center gap-3 bg-white/10 dark:bg-slate-900/40 hover:bg-white/20 dark:hover:bg-slate-900/60 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 dark:bg-slate-900/50 flex items-center justify-center flex-shrink-0">
                     <Icon className="text-white text-sm" />
                   </div>
                   <span className="text-white/90 text-sm font-medium">{text}</span>
@@ -228,17 +245,17 @@ const Signup = () => {
         <div className="flex-1 overflow-y-auto flex items-start justify-center py-10 px-4 sm:px-8">
           <div className="w-full max-w-md">
 
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-8">
 
               {/* Heading */}
               <div className="mb-6">
-                <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Create Account</h2>
-                <p className="text-slate-500 text-sm">Join Vidyalaya and start your journey</p>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">Create Account</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Join Vidyalaya and start your journey</p>
               </div>
 
               {/* ── Role toggle ─────────────────────────────────────────────── */}
               <div className="mb-6">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                   I want to join as…
                 </p>
                 <div className="grid grid-cols-2 gap-3">
@@ -251,8 +268,8 @@ const Signup = () => {
                         'relative flex flex-col items-center justify-center gap-1.5 py-3 px-2',
                         'rounded-xl border-2 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400',
                         role === value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                          : 'border-slate-200 text-slate-500 hover:border-blue-300 hover:bg-blue-50/50',
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 shadow-sm'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-blue-300 hover:bg-blue-50 dark:bg-blue-900/20/50',
                       ].join(' ')}
                     >
                       {/* Tick badge shown on the selected role */}
@@ -271,7 +288,7 @@ const Signup = () => {
               {error && (
                 <div
                   role="alert"
-                  className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-2"
+                  className="mb-5 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl text-red-600 text-sm flex items-center gap-2"
                 >
                   <FaExclamationCircle className="flex-shrink-0" />
                   <span>{error}</span>
@@ -355,7 +372,7 @@ const Signup = () => {
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-700 transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-300 focus:outline-none focus:text-slate-700 dark:text-slate-300 transition-colors"
                     >
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
@@ -380,7 +397,7 @@ const Signup = () => {
 
                 {/* ── Teacher-specific fields (only rendered when role === 'teacher') ── */}
                 {role === 'teacher' && (
-                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Teacher Information
                     </p>
@@ -427,8 +444,21 @@ const Signup = () => {
                         rows={3}
                         maxLength={500}
                         /* Uses the same border, radius, and focus ring as text inputs for consistency */
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-800 text-sm placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300"
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-sm placeholder-slate-400 outline-none resize-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-slate-300 dark:border-slate-600"
                       />
+                    </Field>
+
+                    <Field label="Qualification Document">
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handleQualificationChange}
+                          required
+                          className="w-full pl-3 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400"
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-slate-500">Upload your degree or certification (PDF or Image, max 5MB).</p>
                     </Field>
                   </div>
                 )}
@@ -451,7 +481,7 @@ const Signup = () => {
               </form>
 
               {/* Sign-in link */}
-              <p className="mt-6 text-center text-sm text-slate-500">
+              <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                 Already have an account?{' '}
                 <Link
                   to="/login"

@@ -31,9 +31,9 @@ const TYPE_ROUTES = {
 
 const TYPE_COLORS = {
   enrollment_request: 'bg-orange-100 text-orange-600',
-  enrollment_approved: 'bg-green-100 text-green-600',
+  enrollment_approved: 'bg-green-100 dark:bg-green-900/30 text-green-600',
   enrolled: 'bg-emerald-100 text-emerald-600',
-  assignment: 'bg-blue-100 text-blue-600',
+  assignment: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600',
   content: 'bg-purple-100 text-purple-600',
   submission: 'bg-indigo-100 text-indigo-600',
 };
@@ -80,7 +80,7 @@ export default function NotificationBell() {
       <button
         id="notification-bell-btn"
         onClick={() => setIsOpen((o) => !o)}
-        className="relative p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:bg-blue-900/20 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400"
         aria-label="Notifications"
       >
         <svg
@@ -105,11 +105,11 @@ export default function NotificationBell() {
 
       {/* Dropdown panel — matches the site's white/blue design */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-h-[480px] flex flex-col rounded-2xl shadow-xl border border-slate-200 bg-white z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 max-h-[480px] flex flex-col rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-800 text-sm">Notifications</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Notifications</span>
               {unreadCount > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
                   {unreadCount}
@@ -138,14 +138,14 @@ export default function NotificationBell() {
                 <div
                   key={n._id}
                   onClick={() => handleClick(n)}
-                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors duration-100 hover:bg-slate-50 ${
-                    !n.isRead ? 'bg-blue-50/60' : ''
+                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors duration-100 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 ${
+                    !n.isRead ? 'bg-blue-50 dark:bg-blue-900/20/60' : ''
                   }`}
                 >
                   {/* Type badge */}
                   <div
                     className={`mt-0.5 flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-base ${
-                      TYPE_COLORS[n.type] || 'bg-slate-100 text-slate-500'
+                      TYPE_COLORS[n.type] || 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                     }`}
                   >
                     {TYPE_ICONS[n.type] || '🔔'}
@@ -154,7 +154,7 @@ export default function NotificationBell() {
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm leading-snug ${
-                        n.isRead ? 'text-slate-500' : 'text-slate-800 font-medium'
+                        n.isRead ? 'text-slate-500 dark:text-slate-400' : 'text-slate-800 dark:text-slate-200 font-medium'
                       }`}
                     >
                       {n.message}
@@ -179,7 +179,7 @@ export default function NotificationBell() {
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="border-t border-slate-100 px-4 py-2.5 text-center">
+            <div className="border-t border-slate-100 dark:border-slate-700 px-4 py-2.5 text-center">
               <span className="text-xs text-slate-400">
                 {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
               </span>

@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 let io;
 const userSockets = new Map();
+const shouldLogConnections = process.env.SOCKET_LOG_CONNECTIONS === 'true';
 
 export const initSocket = (server) => {
   io = new Server(server, {
@@ -26,11 +27,15 @@ export const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.userId} with socket ID: ${socket.id}`);
+    if (shouldLogConnections) {
+      console.log(`User connected: ${socket.userId} with socket ID: ${socket.id}`);
+    }
     userSockets.set(socket.userId, socket.id);
 
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.userId}`);
+      if (shouldLogConnections) {
+        console.log(`User disconnected: ${socket.userId}`);
+      }
       if (userSockets.get(socket.userId) === socket.id) {
         userSockets.delete(socket.userId);
       }

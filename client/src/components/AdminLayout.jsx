@@ -1,17 +1,17 @@
-import { FaChalkboardTeacher, FaSignOutAlt, FaUser, FaUserShield, FaUsers } from 'react-icons/fa';
+import { FaChalkboardTeacher, FaSignOutAlt, FaUser, FaUserShield, FaUsers, FaSun, FaMoon } from 'react-icons/fa';
 import { NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, toggleTheme } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItemClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
       isActive
         ? 'bg-primary-600 text-white shadow-sm'
-        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800'
     }`;
 
   const handleLogout = () => {
@@ -64,11 +64,11 @@ const AdminLayout = ({ children }) => {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
         {/* Top bar */}
-        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 dark:bg-slate-900/80 backdrop-blur flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen((v) => !v)}
-              className="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="lg:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800"
             >
               <span className="sr-only">Toggle sidebar</span>
               <svg
@@ -95,6 +95,13 @@ const AdminLayout = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+              className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 transition-colors"
+            >
+              {user?.themePreference === 'dark' ? <FaSun size={18} /> : <FaMoon size={18} />}
+            </button>
             <div className="hidden sm:flex flex-col items-end">
               <p className="text-xs text-slate-400">Role</p>
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase">
@@ -107,7 +114,7 @@ const AdminLayout = ({ children }) => {
               </div>
               <button
                 onClick={handleLogout}
-                className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/20"
               >
                 <FaSignOutAlt />
                 <span>Logout</span>

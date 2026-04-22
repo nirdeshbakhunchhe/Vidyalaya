@@ -19,7 +19,7 @@ import {
 } from 'react-icons/fa';
 
 const PageShell = ({ children, activePath }) => (
-  <div className="h-screen bg-slate-50 flex flex-col">
+  <div className="h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
     <DashboardNav activePage={activePath} />
     <div className="flex flex-1 overflow-hidden">
       <TeacherSidebar />
@@ -185,23 +185,23 @@ const TeacherAssignments = () => {
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <FaClipboardList className="text-sky-500" />
               Teacher Assignments
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Create quizzes/projects and grade student submissions.
             </p>
           </div>
           <div className="text-xs text-slate-400">
-            Signed in as <span className="text-slate-700 font-semibold">{user?.name}</span>
+            Signed in as <span className="text-slate-700 dark:text-slate-300 font-semibold">{user?.name}</span>
           </div>
         </div>
 
         {error && (
           <div
             role="alert"
-            className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl"
+            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-700 text-sm px-4 py-3 rounded-xl"
           >
             {error}
           </div>
@@ -209,19 +209,19 @@ const TeacherAssignments = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h2 className="font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+              <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaPlus className="text-amber-500" />
                 Create Assignment
               </h2>
 
               <div className="mt-4 space-y-3">
                 <div>
-                  <label className="text-xs text-slate-600">Course</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-300">Course</label>
                   <select
                     value={createForm.courseId}
                     onChange={(e) => onChange('courseId', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl text-sm bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select course</option>
                     {teacherCourses.map((c) => (
@@ -239,8 +239,8 @@ const TeacherAssignments = () => {
                     className={[
                       'flex-1 px-3 py-2 rounded-xl text-sm font-semibold border',
                       createForm.type === 'quiz'
-                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50',
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 text-blue-700'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900',
                     ].join(' ')}
                   >
                     Quiz
@@ -251,8 +251,8 @@ const TeacherAssignments = () => {
                     className={[
                       'flex-1 px-3 py-2 rounded-xl text-sm font-semibold border',
                       createForm.type === 'project'
-                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50',
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 text-blue-700'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900',
                     ].join(' ')}
                   >
                     Project
@@ -260,59 +260,59 @@ const TeacherAssignments = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-600">Title</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-300">Title</label>
                   <input
                     value={createForm.title}
                     onChange={(e) => onChange('title', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"
+                    className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-600">Points</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-300">Points</label>
                   <input
                     type="number"
                     value={createForm.points}
                     onChange={(e) => onChange('points', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"
+                    className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-600">Due date</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-300">Due date</label>
                   <input
                     type="date"
                     value={createForm.dueAt}
                     onChange={(e) => onChange('dueAt', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"
+                    className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-600">Duration (display)</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-300">Duration (display)</label>
                   <input
                     value={createForm.duration}
                     onChange={(e) => onChange('duration', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"
+                    className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-600">Description</label>
+                  <label className="text-xs text-slate-600 dark:text-slate-300">Description</label>
                   <textarea
                     value={createForm.description}
                     onChange={(e) => onChange('description', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white min-h-[80px]"
+                    className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 min-h-[80px] text-slate-900 dark:text-white"
                   />
                 </div>
 
                 {createForm.type === 'quiz' ? (
                   <div className="space-y-4 pt-2">
-                    <label className="font-semibold text-sm text-slate-800">Quiz Questions</label>
+                    <label className="font-semibold text-sm text-slate-800 dark:text-slate-200">Quiz Questions</label>
                     {createForm.questions.map((q, qIndex) => (
-                      <div key={qIndex} className="p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3 relative">
+                      <div key={qIndex} className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 space-y-3 relative">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold text-slate-600">Question {qIndex + 1}</span>
+                          <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Question {qIndex + 1}</span>
                           {createForm.questions.length > 1 && (
                             <button
                               type="button"
@@ -335,10 +335,10 @@ const TeacherAssignments = () => {
                             onChange('questions', newQ);
                           }}
                           placeholder="Question prompt"
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                         />
                         <div className="space-y-2">
-                          <label className="text-xs text-slate-500 font-medium">Options & Correct Answer</label>
+                          <label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Options & Correct Answer</label>
                           {q.options.map((opt, optIndex) => (
                             <div key={optIndex} className="flex items-center gap-2">
                               <input
@@ -360,7 +360,7 @@ const TeacherAssignments = () => {
                                   onChange('questions', newQ);
                                 }}
                                 placeholder={`Option ${optIndex + 1}`}
-                                className="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                                className="flex-1 px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                               />
                               {q.options.length > 2 && (
                                 <button
@@ -400,14 +400,14 @@ const TeacherAssignments = () => {
                       onClick={() => {
                         onChange('questions', [...createForm.questions, { question: '', options: ['', ''], correctAnswer: 0 }]);
                       }}
-                      className="w-full py-2 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-semibold text-sm hover:border-slate-400 hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
+                      className="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 dark:text-slate-400 font-semibold text-sm hover:border-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 flex items-center justify-center gap-2 transition-colors"
                     >
                       <FaPlus /> Add Question
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-3 pt-2">
-                    <label className="font-semibold text-sm text-slate-800">Project Requirements</label>
+                    <label className="font-semibold text-sm text-slate-800 dark:text-slate-200">Project Requirements</label>
                     {createForm.requirements.map((req, reqIndex) => (
                       <div key={reqIndex} className="flex gap-2 items-start">
                         <textarea
@@ -418,7 +418,7 @@ const TeacherAssignments = () => {
                             onChange('requirements', newReqs);
                           }}
                           placeholder={`Requirement ${reqIndex + 1}`}
-                          className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white min-h-[60px] resize-y"
+                          className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 min-h-[60px] resize-y text-slate-900 dark:text-white"
                         />
                         {createForm.requirements.length > 1 && (
                           <button
@@ -440,7 +440,7 @@ const TeacherAssignments = () => {
                       onClick={() => {
                         onChange('requirements', [...createForm.requirements, '']);
                       }}
-                      className="w-full py-2 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-semibold text-sm hover:border-slate-400 hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
+                      className="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 dark:text-slate-400 font-semibold text-sm hover:border-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 flex items-center justify-center gap-2 transition-colors"
                     >
                       <FaPlus /> Add Requirement
                     </button>
@@ -448,7 +448,7 @@ const TeacherAssignments = () => {
                 )}
 
                 {createError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-xl">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-700 text-sm px-3 py-2 rounded-xl">
                     {createError}
                   </div>
                 )}
@@ -466,15 +466,15 @@ const TeacherAssignments = () => {
           </div>
 
           <div className="lg:col-span-2 space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h2 className="font-bold text-slate-900 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+              <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FaClipboardList className="text-indigo-500" />
                 Your Assignments
               </h2>
 
               <div className="mt-4 space-y-3">
                 {teacherAssignments.length === 0 ? (
-                  <div className="text-sm text-slate-500">
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
                     No assignments yet. Create one on the left.
                   </div>
                 ) : (
@@ -486,18 +486,18 @@ const TeacherAssignments = () => {
                       className={[
                         'w-full text-left p-4 rounded-xl border transition-colors',
                         selectedAssignment?.id === a.id
-                          ? 'bg-blue-50 border-blue-200'
-                          : 'bg-white border-slate-200 hover:bg-slate-50',
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900',
                       ].join(' ')}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="font-semibold text-slate-900">{a.title}</div>
-                          <div className="text-xs text-slate-500 mt-0.5">
+                          <div className="font-semibold text-slate-900 dark:text-white">{a.title}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {courseLabel.get(String(a.courseId || a.courseId)) || a.course} · {a.type}
                           </div>
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                           {a.dueDate ? new Date(a.dueDate).toLocaleDateString() : 'No due date'}
                         </div>
                       </div>
@@ -507,13 +507,13 @@ const TeacherAssignments = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="font-bold text-slate-900">
+                <h2 className="font-bold text-slate-900 dark:text-white">
                   Submissions
                 </h2>
                 {selectedAssignment ? (
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
                     {selectedAssignment.type.toUpperCase()}
                   </div>
                 ) : (
@@ -522,7 +522,7 @@ const TeacherAssignments = () => {
               </div>
 
               {!selectedAssignment ? (
-                <div className="mt-4 text-sm text-slate-500">
+                <div className="mt-4 text-sm text-slate-500 dark:text-slate-400">
                   Pick an assignment above to see and grade submissions.
                 </div>
               ) : loadingSubmissions ? (
@@ -533,16 +533,16 @@ const TeacherAssignments = () => {
               ) : (
                 <div className="mt-4 space-y-3">
                   {submissions.length === 0 ? (
-                    <div className="text-sm text-slate-500">No submissions yet.</div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">No submissions yet.</div>
                   ) : (
                     submissions.map((s) => (
-                      <div key={s.id} className="border border-slate-200 rounded-xl p-4">
+                      <div key={s.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <div className="font-semibold text-slate-900">
+                            <div className="font-semibold text-slate-900 dark:text-white">
                               {s.student}
                             </div>
-                            <div className="text-xs text-slate-500 mt-0.5">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               Status: {s.status}
                               {s.submittedAt ? ` · ${new Date(s.submittedAt).toLocaleDateString()}` : ''}
                             </div>
@@ -580,21 +580,21 @@ const TeacherAssignments = () => {
                         {selectedAssignment.type === 'project' ? (
                           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                              <label className="text-xs text-slate-600">Grade</label>
+                              <label className="text-xs text-slate-600 dark:text-slate-300">Grade</label>
                               <input
                                 type="number"
                                 defaultValue={s.score ?? ''}
-                                className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white"
+                                className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                                 onChange={(e) => {
                                   s._gradeDraft = e.target.value;
                                 }}
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-slate-600">Feedback</label>
+                              <label className="text-xs text-slate-600 dark:text-slate-300">Feedback</label>
                               <textarea
                                 defaultValue={s.feedback ?? ''}
-                                className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white min-h-[70px]"
+                                className="mt-1 w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-900 min-h-[70px] text-slate-900 dark:text-white"
                                 onChange={(e) => {
                                   s._feedbackDraft = e.target.value;
                                 }}
@@ -617,7 +617,7 @@ const TeacherAssignments = () => {
                           </div>
                         ) : (
                           <div className="mt-3">
-                            <div className="text-sm text-slate-600">
+                            <div className="text-sm text-slate-600 dark:text-slate-300">
                               Score: {s.score ?? 0} / {selectedAssignment.points ?? 0}
                             </div>
                           </div>

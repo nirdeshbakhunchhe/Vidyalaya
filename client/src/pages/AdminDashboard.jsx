@@ -99,7 +99,7 @@ const AdminDashboard = () => {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3">
+          <div className="rounded-xl border border-red-200 dark:border-red-800/30 bg-red-50 dark:bg-red-900/20 text-red-700 text-sm px-4 py-3">
             {error}
           </div>
         )}
@@ -120,7 +120,7 @@ const AdminDashboard = () => {
                 <p className="text-xl font-bold text-slate-900 dark:text-white">
                   {loading ? '—' : stat.value}
                 </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{stat.sub}</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 dark:text-slate-400 mt-0.5">{stat.sub}</p>
               </div>
             </div>
           ))}

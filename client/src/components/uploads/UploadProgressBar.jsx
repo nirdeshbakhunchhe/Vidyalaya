@@ -32,7 +32,7 @@ const UploadProgressBar = ({ progress, label, variant = 'default' }) => {
         <div className="flex items-center justify-between">
           <span
             className={`text-xs font-medium ${
-              isDone ? 'text-emerald-600' : 'text-slate-500'
+              isDone ? 'text-emerald-600' : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             {/* Check mark prefix shown only when done — avoids emoji rendering variance */}
@@ -40,7 +40,7 @@ const UploadProgressBar = ({ progress, label, variant = 'default' }) => {
           </span>
           <span
             className={`text-xs font-semibold tabular-nums ${
-              isDone ? 'text-emerald-600' : 'text-slate-600'
+              isDone ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-300'
             }`}
           >
             {safeProgress}%
@@ -49,7 +49,7 @@ const UploadProgressBar = ({ progress, label, variant = 'default' }) => {
       )}
 
       <div
-        className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"
+        className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden"
         role="progressbar"
         aria-valuenow={safeProgress}
         aria-valuemin={0}

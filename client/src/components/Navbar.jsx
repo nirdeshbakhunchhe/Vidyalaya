@@ -36,7 +36,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-white dark:bg-slate-900/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-16 flex items-center justify-between">
           {/* Logo */}
@@ -44,7 +44,7 @@ const Navbar = () => {
             <img 
               src={logo} 
               alt="Vidyalaya" 
-              className="h-9 w-9 rounded-lg object-contain bg-white transition-transform group-hover:scale-105" 
+              className="h-9 w-9 rounded-lg object-contain bg-white dark:bg-slate-900 transition-transform group-hover:scale-105" 
             />
             <span className="text-xl font-bold text-slate-900 dark:text-white">
               Vidyalaya
@@ -57,7 +57,7 @@ const Navbar = () => {
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.path)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
               >
                 {item.name}
               </button>
@@ -72,7 +72,7 @@ const Navbar = () => {
                 <button
                   onClick={toggleTheme}
                   aria-label="Toggle Theme"
-                  className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                  className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
                 >
                   {user?.themePreference === 'dark' ? <FaSun size={18} /> : <FaMoon size={18} />}
                 </button>
@@ -90,7 +90,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
                 >
                   Log in
                 </Link>
@@ -107,7 +107,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="md:hidden p-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 transition-colors"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
@@ -122,7 +122,7 @@ const Navbar = () => {
                 <button
                   key={item.name}
                   onClick={() => handleNavClick(item.path)}
-                  className="text-left px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                  className="text-left px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
                 >
                   {item.name}
                 </button>
@@ -143,7 +143,7 @@ const Navbar = () => {
                     <Link
                       to="/login"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
+                      className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800 transition-colors"
                     >
                       Log in
                     </Link>
@@ -163,7 +163,7 @@ const Navbar = () => {
                       toggleTheme();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center justify-center gap-2 px-4 py-2 mt-2 rounded-lg text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 mt-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     {user?.themePreference === 'dark' ? (
                       <><FaSun size={16} /> Light Mode</>

@@ -72,12 +72,12 @@ const PaymentPage = () => {
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-6 text-sm transition-colors focus:outline-none focus:underline"
+          className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 mb-6 text-sm transition-colors focus:outline-none focus:underline"
         >
           <FaArrowLeft /><span>Back to Course</span>
         </button>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
 
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
@@ -93,7 +93,7 @@ const PaymentPage = () => {
           <div className="p-6 space-y-6">
 
             {/* Course summary card */}
-            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
               {courseData.thumbnail && (
                 <img
                   src={courseData.thumbnail}
@@ -103,10 +103,10 @@ const PaymentPage = () => {
                 />
               )}
               <div className="flex-1 min-w-0">
-                <h2 className="font-semibold text-slate-900 text-sm leading-snug mb-2 line-clamp-2">
+                <h2 className="font-semibold text-slate-900 dark:text-white text-sm leading-snug mb-2 line-clamp-2">
                   {courseData.title}
                 </h2>
-                <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+                <div className="flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
                   {courseData.duration && (
                     <span className="flex items-center gap-1">
                       <FaClock className="text-blue-400" />{courseData.duration}
@@ -124,15 +124,15 @@ const PaymentPage = () => {
 
             {/* Price breakdown */}
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span>Course fee</span>
                 <span>NPR {Number(courseData.price).toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span>Platform fee</span>
                 <span className="text-green-600 font-medium">Free</span>
               </div>
-              <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900">
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between font-bold text-slate-900 dark:text-white">
                 <span>Total</span>
                 <span className="text-blue-700 text-lg">
                   NPR {Number(courseData.price).toLocaleString()}
@@ -147,7 +147,7 @@ const PaymentPage = () => {
                 'AI Tutor support available 24/7',
                 'Certificate of completion',
               ].map((item) => (
-                <div key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                <div key={item} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                   <FaCheckCircle className="text-green-500 flex-shrink-0" />
                   <span>{item}</span>
                 </div>
@@ -158,7 +158,7 @@ const PaymentPage = () => {
             {paymentError && (
               <div
                 role="alert"
-                className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm"
+                className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-700 rounded-xl text-sm"
               >
                 <FaExclamationCircle className="flex-shrink-0 mt-0.5" />
                 <span>{paymentError}</span>

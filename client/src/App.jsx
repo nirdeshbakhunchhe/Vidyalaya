@@ -17,6 +17,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import OtpVerification from './pages/OtpVerification';
 import ExploreCourses from './pages/ExploreCourses';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // ── Authenticated pages ───────────────────────────────────────────────────────
 import Home from './pages/Home';
@@ -36,6 +38,9 @@ import CourseLearning from './pages/CourseLearning';
 import StudentLearningHome from './pages/StudentLearningHome';
 import Assignments from './pages/Assignments';
 import StudentPaymentHistory from './pages/StudentPaymentHistory';
+import GradeCalculator from './pages/GradeCalculator';
+import StudyAnalytics from './pages/StudyAnalytics';
+import Leaderboard from './pages/Leaderboard';
 
 // ── Teacher pages ─────────────────────────────────────────────────────────────
 import TeacherDashboard from './pages/TeacherDashboard';
@@ -54,7 +59,7 @@ import AdminTeachers from './pages/AdminTeachers';
 // Centralised here so any future spinner style change only needs one edit.
 // ─────────────────────────────────────────────────────────────────────────────
 const LoadingSpinner = ({ color = 'border-blue-600' }) => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
     <div
       className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${color}`}
       role="status"
@@ -108,6 +113,8 @@ function App() {
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/verify-otp" element={<PublicRoute><OtpVerification /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+          <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
           <Route path="/explore-courses" element={<ExploreCourses />} />
 
           {/* Authenticated routes */}
@@ -144,7 +151,10 @@ function App() {
           <Route path="/student/course/:courseId/learn" element={<ProtectedRoute><CourseLearning /></ProtectedRoute>} />
           <Route path="/student/learning" element={<ProtectedRoute><StudentLearningHome /></ProtectedRoute>} />
           <Route path="/student/assignments" element={<ProtectedRoute><Assignments /></ProtectedRoute>} />
+          <Route path="/student/calculator" element={<ProtectedRoute><GradeCalculator /></ProtectedRoute>} />
           <Route path="/student/payments" element={<ProtectedRoute><StudentPaymentHistory /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><StudyAnalytics /></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />

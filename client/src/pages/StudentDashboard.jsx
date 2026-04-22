@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 // ── Auth & API ────────────────────────────────────────────────────────────────
 import { useAuth } from '../context/AuthContext';
-import { courseAPI, progressAPI } from '../services/api';
+import { assignmentAPI, courseAPI, progressAPI } from '../services/api';
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 import logo from '../assets/logo/logo1.png';
@@ -16,7 +16,6 @@ import {
   FaBook,
   FaRobot,
   FaFire,
-  FaTrophy,
   FaChartLine,
   FaPlay,
   FaCompass,
@@ -25,7 +24,6 @@ import {
   FaCheckCircle,
   FaSpinner,
   FaCalendarAlt,
-  FaMedal,
   FaArrowRight,
   FaBookOpen,
 } from 'react-icons/fa';
@@ -50,7 +48,99 @@ const PROGRESS_COLORS = [
 ];
 
 // Tab identifiers for the content switcher
-const TABS = ['overview', 'progress', 'achievements'];
+const TABS = ['overview', 'progress'];
+
+const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+const formatShortDate = (dateLike) => {
+  if (!dateLike) return '';
+  try {
+    return new Date(dateLike).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  } catch {
+    return '';
+  }
+};
+
+const toLocalDateKey = (d) => {
+  const date = new Date(d);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10); // YYYY-MM-DD
+};
+
+const computeLast7DaysWatchSeries = (progresses) => {
+  const today = new Date();
+  const day = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const keys = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(day.getTime() - i * 86400000);
+    keys.push(toLocalDateKey(d));
+  }
+
+  const totals = new Map(keys.map((k) => [k, 0]));
+  (progresses || []).forEach((p) => {
+    (p.watchTimeLogs || []).forEach((log) => {
+      if (!totals.has(log.date)) return;
+      totals.set(log.date, (totals.get(log.date) || 0) + (Number(log.timeSpent) || 0));
+    });
+  });
+
+  const points = keys.map((k) => ({
+    key: k,
+    label: k.slice(5), // MM-DD
+    seconds: totals.get(k) || 0,
+  }));
+
+  const max = Math.max(1, ...points.map((p) => p.seconds));
+  return { points, max };
+};
+
+const WeeklyLineGraph = ({ points }) => {
+  const width = 520;
+  const height = 140;
+  const padding = 18;
+
+  const max = Math.max(1, ...points.map((p) => Number(p.seconds) || 0));
+  const innerW = width - padding * 2;
+  const innerH = height - padding * 2;
+
+  const coords = points.map((p, idx) => {
+    const x = padding + (idx / Math.max(1, points.length - 1)) * innerW;
+    const y = padding + (1 - (Number(p.seconds) || 0) / max) * innerH;
+    return { ...p, x, y };
+  });
+
+  const d = coords
+    .map((c, idx) => `${idx === 0 ? 'M' : 'L'} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`)
+    .join(' ');
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <svg width={width} height={height} className="min-w-[520px]">
+        {/* Grid */}
+        <path
+          d={`M ${padding} ${padding} V ${height - padding} H ${width - padding}`}
+          fill="none"
+          stroke="rgba(148,163,184,0.35)"
+          strokeWidth="1"
+        />
+        {/* Line */}
+        <path d={d} fill="none" stroke="rgb(37 99 235)" strokeWidth="3" />
+        {/* Points */}
+        {coords.map((c) => (
+          <g key={c.key}>
+            <circle cx={c.x} cy={c.y} r="4.5" fill="white" stroke="rgb(37 99 235)" strokeWidth="2" />
+            <title>{`${c.key}: ${Math.round((Number(c.seconds) || 0) / 60)}m`}</title>
+          </g>
+        ))}
+      </svg>
+      <div className="mt-2 flex justify-between text-[11px] text-slate-400">
+        {points.map((p) => (
+          <span key={p.key} className="w-[14.28%] text-center">{p.label}</span>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // =============================================================================
 // Sub-components
@@ -60,7 +150,7 @@ const TABS = ['overview', 'progress', 'achievements'];
 // Generic horizontal progress bar.
 // `gradient` accepts a Tailwind `from-*` / `to-*` pair string.
 const ProgressBar = ({ value, gradient = 'from-blue-500 to-blue-400' }) => (
-  <div className="w-full bg-slate-200 rounded-full h-2">
+  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
     <div
       className={`h-2 rounded-full bg-gradient-to-r ${gradient} transition-all duration-700`}
       style={{ width: `${Math.min(value, 100)}%` }}
@@ -75,13 +165,13 @@ const ProgressBar = ({ value, gradient = 'from-blue-500 to-blue-400' }) => (
 // ── StatCard ──────────────────────────────────────────────────────────────────
 // Summary metric tile used in the stats row at the top of the dashboard.
 const StatCard = ({ icon: Icon, label, value, gradient, sub }) => (
-  <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex items-center space-x-4 hover:shadow-md transition-shadow">
+  <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-4 hover:shadow-md transition-shadow">
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${gradient}`}>
       <Icon className="text-white text-xl" />
     </div>
     <div className="min-w-0">
-      <p className="text-2xl font-bold text-slate-900 truncate">{value}</p>
-      <p className="text-sm text-slate-500">{label}</p>
+      <p className="text-2xl font-bold text-slate-900 dark:text-white truncate">{value}</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
       {sub && <p className="text-xs text-green-600 font-medium mt-0.5">{sub}</p>}
     </div>
   </div>
@@ -98,39 +188,48 @@ const StudentDashboard = () => {
   const [totalHours,      setTotalHours]      = useState(0);
   const [loading,         setLoading]         = useState(true);
   const [activeTab,       setActiveTab]       = useState('overview');
+  const [assignments,     setAssignments]     = useState([]);
+  const [weeklySeries,    setWeeklySeries]    = useState({ points: [], max: 1 });
 
-  // Fetch the student's enrolled courses on mount (API call unchanged)
+  // Fetch the student's enrolled courses (and progress).
+  // Note: watchTimeLogs changes while the user watches videos, so we refetch
+  // periodically and when the tab becomes visible again.
   useEffect(() => {
+    let cancelled = false;
+
     const fetchEnrolled = async () => {
       setLoading(true);
       try {
-        const [courseData, progressData] = await Promise.all([
+        const [courseData, progressData, assignmentData] = await Promise.all([
           courseAPI.getEnrolledCourses(),
-          progressAPI.getAllProgress()
+          progressAPI.getAllProgress(),
+          assignmentAPI.getMyAssignments(),
         ]);
         
         const enrolled = courseData.courses || [];
         const progresses = progressData || [];
+        const myAssignments = assignmentData?.assignments || [];
 
         const merged = enrolled.map(c => {
           const p = progresses.find(p => String(p.course?._id || p.course) === String(c.id));
           return { ...c, progress: p ? p.completionPercentage : 0 };
         });
 
-        // Calculate total hours this week
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
+        // Calculate total watch time this week from watchTimeLogs (YYYY-MM-DD)
+        const today = new Date();
+        const day = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const dow = day.getDay(); // 0..6
+        const mondayOffset = (dow + 6) % 7;
+        const thisWeekStart = new Date(day.getTime() - mondayOffset * 24 * 60 * 60 * 1000);
+
         let totalSeconds = 0;
-        progresses.forEach(p => {
-          if (p.watchTimeLogs) {
-             p.watchTimeLogs.forEach(log => {
-                const logDate = new Date(log.date);
-                if (logDate >= sevenDaysAgo) {
-                   totalSeconds += (log.timeSpent || 0);
-                }
-             });
-          }
+        progresses.forEach((p) => {
+          (p.watchTimeLogs || []).forEach((log) => {
+            const d = new Date(log.date + 'T00:00:00');
+            if (d >= thisWeekStart && d <= day) {
+              totalSeconds += Number(log.timeSpent) || 0;
+            }
+          });
         });
         
         const hours = totalSeconds / 3600;
@@ -140,15 +239,41 @@ const StudentDashboard = () => {
            setTotalHours(`${hours.toFixed(1)}h`);
         }
 
+        if (cancelled) return;
         setEnrolledCourses(merged);
+        setAssignments(myAssignments);
+        setWeeklySeries(computeLast7DaysWatchSeries(progresses));
       } catch (err) {
         console.error(err);
+        if (cancelled) return;
         setEnrolledCourses([]);
+        setAssignments([]);
+        setWeeklySeries({ points: [], max: 1 });
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
+
     fetchEnrolled();
+
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        fetchEnrolled();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    const id = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchEnrolled();
+      }
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVis);
+      window.clearInterval(id);
+    };
   }, []);
 
   // ── Derived values ──────────────────────────────────────────────────────────
@@ -162,13 +287,13 @@ const StudentDashboard = () => {
         )
       : 0;
 
-  // Placeholder static values until the analytics models are fully built
-  const maxHours   = 10;
-
-  const earnedCount = user?.badges?.length || 0;
-
   // First name used in the greeting to keep it friendly and short
   const firstName = user?.name?.split(' ')[0] || 'Student';
+
+  const upcomingDeadlines = (assignments || [])
+    .filter((a) => a?.dueDate && (a.status === 'pending' || a.status === 'overdue'))
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .slice(0, 5);
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -178,8 +303,8 @@ const StudentDashboard = () => {
       <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-500 rounded-2xl p-6 sm:p-8 mb-8 text-white relative overflow-hidden">
         {/* Decorative background circles — purely cosmetic */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-white rounded-full" />
-          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white rounded-full" />
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-white dark:bg-slate-900 rounded-full" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white dark:bg-slate-900 rounded-full" />
         </div>
 
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -202,17 +327,17 @@ const StudentDashboard = () => {
             <img
               src={logo}
               alt="Vidyalaya"
-              className="h-10 w-10 rounded-xl bg-white/15 p-1.5 ring-1 ring-white/20"
+              className="h-10 w-10 rounded-xl bg-white dark:bg-slate-900/15 p-1.5 ring-1 ring-white/20"
             />
             <button
               onClick={() => navigate('/explore-courses')}
-              className="flex items-center space-x-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-xl font-medium transition-all text-sm border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="flex items-center space-x-2 px-4 py-2.5 bg-white/15 hover:bg-white/20 text-white rounded-xl font-medium transition-all text-sm border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
             >
               <FaCompass /><span>Explore</span>
             </button>
             <button
               onClick={() => navigate('/ai-tutor')}
-              className="flex items-center space-x-2 px-4 py-2.5 bg-white text-blue-700 rounded-xl font-semibold hover:bg-blue-50 transition-all text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="flex items-center space-x-2 px-4 py-2.5 bg-white dark:bg-slate-900 text-blue-700 rounded-xl font-semibold hover:bg-blue-50 transition-all text-sm shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               <FaRobot /><span>AI Tutor</span>
             </button>
@@ -237,25 +362,25 @@ const StudentDashboard = () => {
           sub={totalProgress > 50 ? 'Great pace!' : 'Keep going!'}
         />
         <StatCard
-          icon={FaTrophy}
-          label="Achievements"
-          value={earnedCount}
-          gradient="from-yellow-500 to-orange-500"
-          sub="Badges earned"
-        />
-        <StatCard
           icon={FaClock}
           label="Time This Week"
           value={totalHours}
           gradient="from-purple-500 to-violet-600"
           sub="Learning time"
         />
+        <StatCard
+          icon={FaCalendarAlt}
+          label="Deadlines"
+          value={upcomingDeadlines.length}
+          gradient="from-orange-500 to-amber-400"
+          sub="Upcoming tasks"
+        />
       </div>
 
       {/* ── Tab switcher ───────────────────────────────────────────────────── */}
       {/* Uses overflow-x-auto so it scrolls on small screens instead of wrapping */}
       <div className="mb-8 overflow-x-auto">
-        <div className="flex space-x-1 bg-white rounded-xl p-1 shadow-sm border border-slate-200 w-fit min-w-full sm:min-w-0">
+        <div className="flex space-x-1 bg-white dark:bg-slate-900 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-800 w-fit min-w-full sm:min-w-0 transition-colors">
           {TABS.map((tab) => (
             <button
               key={tab}
@@ -265,7 +390,7 @@ const StudentDashboard = () => {
                 'px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap',
                 activeTab === tab
                   ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800',
               ].join(' ')}
             >
               {tab}
@@ -284,9 +409,9 @@ const StudentDashboard = () => {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Continue Learning card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                   <FaPlay className="text-blue-500" /><span>Continue Learning</span>
                 </h3>
                 <button
@@ -308,7 +433,7 @@ const StudentDashboard = () => {
               {!loading && enrolledCourses.length === 0 && (
                 <div className="text-center py-8">
                   <FaBookOpen className="text-4xl text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500 text-sm mb-3">No courses enrolled yet.</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">No courses enrolled yet.</p>
                   <button
                     onClick={() => navigate('/explore-courses')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -324,7 +449,7 @@ const StudentDashboard = () => {
                   {enrolledCourses.slice(0, 3).map((course, i) => (
                     <div
                       key={course.id}
-                      className="flex items-center space-x-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                      className="flex items-center space-x-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
                       {/* Course colour swatch */}
                       <div
@@ -334,8 +459,8 @@ const StudentDashboard = () => {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 text-sm truncate">{course.title}</p>
-                        <p className="text-xs text-slate-400 mb-1.5">{course.instructor}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{course.title}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-300 mb-1.5">{course.instructor}</p>
                         <ProgressBar
                           value={course.progress || 0}
                           gradient={PROGRESS_COLORS[i % PROGRESS_COLORS.length]}
@@ -343,7 +468,7 @@ const StudentDashboard = () => {
                       </div>
 
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-bold text-slate-700 mb-2">{course.progress || 0}%</p>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">{course.progress || 0}%</p>
                         <button
                           onClick={() => navigate(`/student/course/${course.id}/learn`)}
                           aria-label={`Continue ${course.title}`}
@@ -359,26 +484,75 @@ const StudentDashboard = () => {
             </div>
 
             {/* Upcoming Deadlines card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2 mb-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2 mb-4">
                 <FaCalendarAlt className="text-orange-500" /><span>Upcoming Deadlines</span>
               </h3>
               <div className="space-y-3">
-                <p className="text-sm text-slate-500 py-4 text-center">No upcoming deadlines.</p>
+                {upcomingDeadlines.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">No upcoming deadlines.</p>
+                ) : (
+                  <>
+                    {upcomingDeadlines.map((a) => {
+                      const dueTs = new Date(a.dueDate).getTime();
+                      const isOverdue = a.status === 'overdue' || dueTs < Date.now();
+                      return (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => navigate('/student/assignments')}
+                          className="w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                                {a.title}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                {a.course} · {String(a.type || '').toUpperCase()} · {a.points ?? 0} pts
+                              </p>
+                            </div>
+                            <div className="flex-shrink-0 text-right">
+                              <p className={`text-xs font-semibold ${isOverdue ? 'text-red-600' : 'text-slate-600 dark:text-slate-300'}`}>
+                                {formatShortDate(a.dueDate)}
+                              </p>
+                              <span className={`mt-1 inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                isOverdue ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                              }`}>
+                                {isOverdue ? 'OVERDUE' : 'DUE'}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => navigate('/student/assignments')}
+                      className="w-full text-sm font-semibold text-orange-600 hover:underline pt-1"
+                    >
+                      View all assignments →
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
           {/* Right column — Weekly Activity */}
           <div>
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center space-x-2">
                 <FaFire className="text-orange-500" /><span>Weekly Activity</span>
               </h3>
-              <div className="flex items-end justify-center space-x-2 h-28 mb-3">
-                <p className="text-sm text-slate-500 mt-10">Activity metrics currently tracking.</p>
-              </div>
-              <p className="text-xs text-slate-400 text-center">{totalHours} total this week</p>
+              {(weeklySeries.points || []).some((p) => (Number(p.seconds) || 0) > 0) ? (
+                <WeeklyLineGraph points={weeklySeries.points} />
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400 py-8 text-center">
+                  Watch-time graph will appear after you study.
+                </p>
+              )}
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-3">{totalHours} total this week</p>
             </div>
           </div>
         </div>
@@ -391,8 +565,8 @@ const StudentDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Per-course progress bars */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center space-x-2">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center space-x-2">
               <FaChartLine className="text-blue-500" /><span>Course Progress</span>
             </h3>
             {enrolledCourses.length === 0 ? (
@@ -404,7 +578,7 @@ const StudentDashboard = () => {
                 {enrolledCourses.map((course, i) => (
                   <div key={course.id}>
                     <div className="flex justify-between items-center mb-1.5">
-                      <p className="text-sm font-semibold text-slate-900 truncate max-w-[70%]">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate max-w-[70%]">
                         {course.title}
                       </p>
                       <span className="text-sm font-bold text-blue-600">
@@ -422,22 +596,22 @@ const StudentDashboard = () => {
           </div>
 
           {/* Expanded weekly learning bar chart */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center space-x-2">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center space-x-2">
               <FaFire className="text-orange-500" /><span>Weekly Learning</span>
             </h3>
             <div className="flex items-end justify-center h-44 mb-4">
-               <p className="text-sm text-slate-500">More data needed.</p>
+               <p className="text-sm text-slate-500 dark:text-slate-400">More data needed.</p>
             </div>
-            <div className="flex justify-between text-sm pt-4 border-t border-slate-100">
-              <span className="text-slate-500">Total this week</span>
-              <span className="font-bold text-slate-900">{totalHours}</span>
+            <div className="flex justify-between text-sm pt-4 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-slate-500 dark:text-slate-400">Total this week</span>
+              <span className="font-bold text-slate-900 dark:text-white">{totalHours}</span>
             </div>
           </div>
 
           {/* Performance summary tiles */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center space-x-2">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-colors">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center space-x-2">
               <FaTrophy className="text-yellow-500" /><span>Performance Summary</span>
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -447,60 +621,13 @@ const StudentDashboard = () => {
                 { label: 'Time Learned',     value: totalHours,             icon: '⏱️' },
                 { label: 'Day Streak',       value: '3 days',               icon: '🔥' },
               ].map((s) => (
-                <div key={s.label} className="text-center p-4 bg-slate-50 rounded-xl">
+                <div key={s.label} className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                   <div className="text-3xl mb-2">{s.icon}</div>
-                  <p className="text-xl font-bold text-slate-900">{s.value}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">{s.value}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          Achievements tab
-          ══════════════════════════════════════════════════════════════════ */}
-      {activeTab === 'achievements' && (
-        <div className="space-y-6">
-
-          {/* Achievement badge grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {(!user?.badges || user.badges.length === 0) ? (
-              <div className="col-span-full text-center py-6">
-                <p className="text-slate-500">No achievements yet. Start learning to earn badges!</p>
-              </div>
-            ) : (
-              user.badges.map((badge, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-2xl shadow-sm border border-yellow-200 p-6 text-center transition-all hover:shadow-lg"
-                >
-                  <div className="text-5xl mb-3">
-                    {badge.icon || '🏆'}
-                  </div>
-                  <h4 className="font-bold text-slate-900 text-sm mb-2">{badge.name}</h4>
-                  <div className="flex items-center justify-center space-x-1 text-green-600 text-xs">
-                    <FaCheckCircle /><span>Earned</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Certificates placeholder */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center">
-            <FaGraduationCap className="text-5xl text-slate-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-slate-900 mb-2">No Certificates Yet</h3>
-            <p className="text-slate-500 text-sm mb-4">
-              Complete a course to earn your first certificate!
-            </p>
-            <button
-              onClick={() => navigate('/my-courses')}
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              View My Courses
-            </button>
           </div>
         </div>
       )}

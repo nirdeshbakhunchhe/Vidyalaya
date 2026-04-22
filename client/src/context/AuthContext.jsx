@@ -104,11 +104,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const verifyOtpAndLogin = async (email, otp) => {
-    const { token: newToken, user: userData } = await authAPI.verifyOtp(email, otp);
+    const data = await authAPI.verifyOtp(email, otp);
+    if (data.pendingApproval) {
+      return data;
+    }
+    const { token: newToken, user: userData } = data;
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
-    return userData;
+    return data;
   };
 
   const logout = () => {

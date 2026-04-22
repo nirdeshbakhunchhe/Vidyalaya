@@ -16,7 +16,7 @@ const About = () => {
           <img
             src="/logo2.png"
             alt="Vidyalaya"
-            className="w-full h-auto max-h-[520px] object-contain rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm"
+            className="w-full h-auto max-h-[520px] object-contain rounded-2xl bg-white dark:bg-slate-900/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm"
           />
         </div>
 

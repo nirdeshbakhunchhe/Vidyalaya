@@ -99,10 +99,10 @@ const CourseThumbnailUpload = ({ courseId, onUploaded }) => {
 
       {/* Section header */}
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center">
+        <div className="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
           <FaImage className="text-xs text-amber-600" />
         </div>
-        <h4 className="text-sm font-semibold text-slate-800">Course Thumbnail</h4>
+        <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Course Thumbnail</h4>
         {uploaded && (
           <span className="ml-auto flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
             <FaCheck className="text-[10px]" /> Uploaded
@@ -127,16 +127,16 @@ const CourseThumbnailUpload = ({ courseId, onUploaded }) => {
             'focus:outline-none focus:ring-2 focus:ring-amber-400',
             dragOver
               ? 'border-amber-400 bg-amber-50 scale-[1.01]'
-              : 'border-slate-200 bg-slate-50 hover:border-amber-300 hover:bg-amber-50/40',
+              : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:border-amber-300 hover:bg-amber-50/40',
           ].join(' ')}
         >
           <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
-            dragOver ? 'bg-amber-100' : 'bg-white shadow-sm border border-slate-100'
+            dragOver ? 'bg-amber-100' : 'bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-700'
           }`}>
             <FaImage className={`text-xl ${dragOver ? 'text-amber-500' : 'text-slate-300'}`} />
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold text-slate-700">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               Drop image here or{' '}
               <span className="text-amber-600">browse</span>
             </p>
@@ -147,10 +147,10 @@ const CourseThumbnailUpload = ({ courseId, onUploaded }) => {
 
       ) : (
         /* ── Preview card ── */
-        <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900">
 
           {/* Image strip with remove / success overlays */}
-          <div className="relative h-36 bg-slate-100 group">
+          <div className="relative h-36 bg-slate-100 dark:bg-slate-800 group">
             <img src={previewSrc} alt="Thumbnail preview" className="w-full h-full object-cover" />
 
             {/* Remove button — hidden once uploading has started */}
@@ -178,7 +178,7 @@ const CourseThumbnailUpload = ({ courseId, onUploaded }) => {
           {/* File name + action row */}
           <div className="px-4 py-3 flex items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-slate-700 truncate">{file.name}</p>
+              <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{file.name}</p>
               <p className="text-xs text-slate-400">{formatBytes(file.size)}</p>
             </div>
 

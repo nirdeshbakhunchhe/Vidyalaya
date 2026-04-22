@@ -26,37 +26,37 @@ const SIDEBAR_ITEMS = [
     label: 'Dashboard',
     icon:  FaTh,
     path:  '/teacher/dashboard',
-    accent: { text: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-500'  },
+    accent: { text: 'text-amber-700 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/30',  border: 'border-amber-500 dark:border-amber-400'  },
   },
   {
     label: 'My Courses',
     icon:  FaBook,
     path:  '/teacher/courses',
-    accent: { text: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-500' },
+    accent: { text: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30', border: 'border-orange-500 dark:border-orange-400' },
   },
   {
     label: 'Create Course',
     icon:  FaPlus,
     path:  '/teacher/create-course',
-    accent: { text: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-500'  },
+    accent: { text: 'text-amber-700 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/30',  border: 'border-amber-500 dark:border-amber-400'  },
   },
   {
     label: 'Payment History',
     icon:  FaReceipt,
     path:  '/teacher/payments',
-    accent: { text: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-500' },
+    accent: { text: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/30', border: 'border-indigo-500 dark:border-indigo-400' },
   },
   {
     label: 'Assignments',
     icon:  FaClipboardList,
     path:  '/teacher/assignments',
-    accent: { text: 'text-sky-700', bg: 'bg-sky-50', border: 'border-sky-500' },
+    accent: { text: 'text-sky-700 dark:text-sky-400', bg: 'bg-sky-50 dark:bg-sky-900/30', border: 'border-sky-500 dark:border-sky-400' },
   },
   {
     label: 'My Profile',
     icon:  FaUser,
     path:  '/profile',
-    accent: { text: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-500'  },
+    accent: { text: 'text-green-600 dark:text-green-400',  bg: 'bg-green-50 dark:bg-green-900/30',  border: 'border-green-500 dark:border-green-400'  },
   },
 ];
 
@@ -84,17 +84,17 @@ const TeacherSidebar = () => {
     <aside
       className={[
         'flex flex-col flex-shrink-0 h-full',
-        'bg-white border-r border-slate-200',
+        'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800',
         'transition-all duration-300',
         collapsed ? 'w-16' : 'w-60',
       ].join(' ')}
     >
       {/* Collapse / expand toggle */}
-      <div className="flex items-center justify-end px-3 py-4 border-b border-slate-100">
+      <div className="flex items-center justify-end px-3 py-4 border-b border-slate-100 dark:border-slate-800">
         <button
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors"
+          className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors"
         >
           {collapsed ? <FaBars /> : <FaTimes />}
         </button>
@@ -119,20 +119,20 @@ const TeacherSidebar = () => {
                 'border-l-4',
                 active
                   ? `${item.accent.bg} ${item.accent.text} ${item.accent.border} font-semibold`
-                  : 'border-l-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                  : 'border-l-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-white dark:hover:text-white',
               ].join(' ')}
             >
               {/* Icon container */}
               <div
                 className={[
                   'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors',
-                  active ? item.accent.bg : 'bg-slate-100 group-hover:bg-slate-200',
+                  active ? item.accent.bg : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:hover:bg-slate-700 dark:group-hover:bg-slate-700',
                 ].join(' ')}
               >
                 <Icon
                   className={[
                     'text-sm transition-colors',
-                    active ? item.accent.text : 'text-slate-500 group-hover:text-slate-700',
+                    active ? item.accent.text : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:text-slate-300 dark:group-hover:text-slate-200',
                   ].join(' ')}
                 />
               </div>

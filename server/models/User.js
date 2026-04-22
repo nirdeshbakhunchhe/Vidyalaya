@@ -86,6 +86,14 @@ const userSchema = new mongoose.Schema(
       maxlength: [500, 'Experience description cannot exceed 500 characters'],
       default: '',
     },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    qualificationDoc: {
+      type: String,
+      default: '',
+    },
 
     // ── OTP fields for email verification / password reset ────────────────────
     otpCode: {
@@ -100,6 +108,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['signup', 'resetPassword', 'changePassword'],
       select: false,
+    },
+
+    // ── Activity tracking (analytics only; does NOT log user out) ──────────────
+    lastActiveAt: {
+      type: Date,
+      default: null,
     },
   },
   {
